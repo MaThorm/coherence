@@ -3,12 +3,15 @@ clear all
 load('attout_dataset.mat')
 load('attin_dataset.mat')
 load("V4_dataset.mat")
-matpath = '/data/projects/V1V4coherence/02_analysis_max/NewFolder/mat_files';
-for b1= 30:5:55
-    for b2 = 70:5:100
-    bpwidth = [b1 b2]
-% Creating trials and bp filtering 
-% Attin trials
+matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files';
+blow1 = 30;
+blow2 = 55;
+bhigh1 = 70;
+bhigh2 = 100;
+bstep = 5;
+for b1= blow1:bstep:blow2
+    for b2 = bhigh1:bstep:bhigh2
+    bpwidth = [b1 b2]   
 for ii = 1:length(attout_dataset)
     in_trials(ii) = do_trialselection(attin_dataset(ii).path,attin_dataset(ii).file,attin_dataset(ii).chan,attin_dataset(ii).stimno,bpwidth);
 end 
@@ -24,9 +27,9 @@ for ii = 1:length(V4_dataset)
 end 
 %
 
-save(fullfile(matpath,sprintf('attin_trials%d%d',bpwidth(1),bpwidth(2))),'in_trials');
-save(fullfile(matpath,sprintf('attout_trials%d%d',bpwidth(1),bpwidth(2))),'out_trials');
-save(fullfile(matpath,sprintf('V4_trials%d%d',bpwidth(1),bpwidth(2))),'V4_trials');
+save(fullfile(matpath,sprintf('attin%d%d.trials',bpwidth(1),bpwidth(2))),'in_trials');
+save(fullfile(matpath,sprintf('attout%d%d.trials',bpwidth(1),bpwidth(2))),'out_trials');
+save(fullfile(matpath,sprintf('V4%d%d.trials',bpwidth(1),bpwidth(2))),'V4_trials');
 
 % Hilberting, Deriving, median filtering, inst change taking, taking mean 
 % over trials and recording sites 
@@ -42,6 +45,7 @@ end
 for ii = 1:length(V4_trials)
     [V4_hilbertData(ii), V4_diffHilbertData(ii), V4_medfiltHilbert(ii), V4_instchange(ii)] = do_hilbert(V4_trials(ii),medianfiltord); 
 end 
+
 
 % mean over trials in 
 for ii = 1:length(in_medfiltHilbert)
@@ -144,5 +148,6 @@ grand_struct.V4summary.change_std = std(aMat,1,'omitnan');
 
 % saving
 save(fullfile(matpath,sprintf('grand_structbp%d%dmed%d.mat',bpwidth(1),bpwidth(2),medianfiltord)),'grand_struct')
+clearvars -except blow1 blow2 bhigh1 bhigh2 b1 b2 attout_dataset attin_dataset V4_dataset matpath
     end
 end 
