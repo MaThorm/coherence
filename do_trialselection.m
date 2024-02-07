@@ -4,6 +4,8 @@ function [trials] = do_trialselection(path,filename,CoI,StimNo,bpwidth,toilim,Bl
 %   filename = name of the file
 %   CoI = Channels of Interest 
 %   StimNo = Included Stimulus Numbers 
+%   bpwidth = widht of bp filter in Hz
+%   toilim = times of interest in seconds 
 %   BlCor = Baseline correction (default = false)
 %   IncOut = Included Outcomes (default = [0])
 %   offset = value in s by which x-axis gets reoriented (default = 1.3)
@@ -46,6 +48,7 @@ trials = ft_selectdata(selectCfg, trials);
 if exist('toilim') 
     cfg = [];
     cfg.toilim = toilim;
+    trials = ft_redefinetrial(cfg, trials);
 end 
 
 % shift 0 by offset
