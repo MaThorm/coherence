@@ -1,4 +1,4 @@
-function [trials] = do_trialselection(path,filename,CoI,StimNo,bpwidth,BlCor,IncOut,offset)
+function [trials] = do_trialselection(path,filename,CoI,StimNo,bpwidth,toilim,BlCor,IncOut,offset)
 %DO_TRIALSELECTION 
 %   path = path of the file
 %   filename = name of the file
@@ -41,6 +41,12 @@ selectCfg = [];
 selectCfg.trials = ismember(trials.trialinfo(:,3), IncOut) & ...
     ismember(trials.trialinfo(:,2), StimNo);
 trials = ft_selectdata(selectCfg, trials);
+
+% selecting certain time window
+if exist('toilim') 
+    cfg = [];
+    cfg.toilim = toilim;
+end 
 
 % shift 0 by offset
 cfg = [];
