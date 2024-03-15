@@ -71,6 +71,7 @@ end
 cfg = [];
 cfg.bpfilter = 'yes';
 cfg.bpfreq = bpwidth;
+cfg.bpfilttype = 'fir';
 trials = ft_preprocessing(cfg,trials);
 %
 end 
