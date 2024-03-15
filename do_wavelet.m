@@ -6,16 +6,18 @@ load("V4_dataset.mat")
 % Creating trials and bp filtering 
 % Attin trials
 bpwidth = [1 150];
-for ii = 1:length(attin_dataset)
+
+parfor ii = 1:length(attin_dataset)
     in_trials(ii) = do_trialselection(attin_dataset(ii).path,attin_dataset(ii).file,attin_dataset(ii).chan,attin_dataset(ii).stimno,bpwidth);
 end 
-for ii = 1:length(attout_dataset)
+parfor ii = 1:length(attout_dataset)
     out_trials(ii) = do_trialselection(attout_dataset(ii).path,attout_dataset(ii).file,attout_dataset(ii).chan,attout_dataset(ii).stimno,bpwidth);
 end 
-for ii = 1:length(V4_dataset)
+parfor ii = 1:length(V4_dataset)
     V4_trials(ii) = do_trialselection(V4_dataset(ii).path,V4_dataset(ii).file,V4_dataset(ii).chan,V4_dataset(ii).stimno,bpwidth);
 end 
 
+%%
 % calculating wavelet
 cfg = [];
 cfg.width = 7;
@@ -103,13 +105,20 @@ wavelet_struct.V4.freqsite = V4.freq_site;
 wavelet_struct.in.site_mat = attin.site_mat;
 wavelet_struct.out.site_mat = attout.site_mat;
 wavelet_struct.V4.site_mat = V4.site_mat;
+wavelet_struct.in.freqsite_bl = attin.freq_site_bl;
+wavelet_struct.out.freqsite_bl = attout.freq_site_bl;
+wavelet_struct.V4.freqsite_bl = V4.freq_site_bl;
+wavelet_struct.in.site_mat_bl = attin.site_mat_bl;
+wavelet_struct.out.site_mat_bl = attout.site_mat_bl;
+wavelet_struct.V4.site_mat_bl = V4.site_mat_bl;
 save(fullfile(matpath,'wavelet_struct.mat'),"wavelet_struct");
 %%
 cfg = [];
 cfg.maskstyle = ['saturation'];
 cfg.colorbar = 'yes';
 figure
-ft_singleplotTFR(cfg,TFRwave_bl(1))
+ft_singleplotTFR(cfg,wavelet_struct.V4.TFR(6))
+clim([0 5e-8])
 
 %% 
 figure 
@@ -120,15 +129,17 @@ ax.YTick = 1:25;
 ax.YTickLabels = round(flip(wavelet_struct.in.TFRbl(1).freq),2);
 
 %% plotting bl correct
-semilogx(wavelet_struct.in.TFRbl(1).freq,wavelet_struct.in.freqsite)
+semilogx(wavelet_struct.in.TFRbl(1).freq,wavelet_struct.in.freqsite_bl)
 hold on 
-semilogx(wavelet_struct.out.TFRbl(1).freq,wavelet_struct.out.freqsite)
-semilogx(wavelet_struct.V4.TFRbl(1).freq,wavelet_struct.V4.freqsite)
+semilogx(wavelet_struct.out.TFRbl(1).freq,wavelet_struct.out.freqsite_bl)
+semilogx(wavelet_struct.V4.TFRbl(1).freq,wavelet_struct.V4.freqsite_bl)
 legend('AttIn','AttOut','V4')
 
 %% plotting nonbl correct
 semilogx(wavelet_struct.in.TFRbl(1).freq,wavelet_struct.in.freqsite)
-hold on 
+hold on  
 semilogx(wavelet_struct.out.TFRbl(1).freq,wavelet_struct.out.freqsite)
+hold off
+legend('AttIn','AttOut')
+%% 
 semilogx(wavelet_struct.V4.TFRbl(1).freq,wavelet_struct.V4.freqsite)
-legend('AttIn','AttOut','V4')

@@ -1,19 +1,18 @@
 clc
 clear all 
-bpwidth = [40 85]
-medfiltord = 30;
-matpath = "/data/projects/V1V4coherence/02_analysis_max/NewFolder/mat_files"
-%%
-grand_struct = load(fullfile(matpath,sprintf('grand_structbp%d%dmed%d.mat',bpwidth(1),bpwidth(2),medfiltord)));
+bpwidth = [30 100];
+medfiltord = [4 8 12 16 20];
+matpath = "/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files"
+%
+grand_struct = load(fullfile(matpath,sprintf('grand_structbp%d%dmed%d.mat',bpwidth(1),bpwidth(2),medfiltord(5))));
+%summary_struct = load(fullfile(matpath,sprintf('summary_structbp%d%dmed%d_%d_%d_%d_%d',bpwidth(1),bpwidth(2),medfiltord(1),medfiltord(2),medfiltord(3),medfiltord(4),medfiltord(5))));
 attin_inst = grand_struct.grand_struct.in_medfiltHilbert;
 attout_inst = grand_struct.grand_struct.out_medfiltHilbert;
-insummary = grand_struct.grand_struct.insummary;
+insummary = grand_struct. grand_struct.insummary;
 outsummary = grand_struct.grand_struct.outsummary;
 V4_inst = grand_struct.grand_struct.V4_medfiltHilbert;
 V4summary = grand_struct.grand_struct.V4summary;
-attin_instchange = grand_struct.grand_struct.in_instchange;
-attout_instchange = grand_struct.grand_struct.out_instchange;
-V4_instchange = grand_struct.grand_struct.V4_instchange;
+%summary_struct = summary_struct.summary_struct
 timebar = -1.3:0.001:5;
 
 %% Plotting all attin sessions with error bars 
@@ -54,7 +53,6 @@ y = insummary.mean(sel);
 sd = insummary.std(sel);
 patch([x fliplr(x)], [y-sd  fliplr(y+sd)], 'r', 'FaceAlpha',0.2, 'EdgeColor','none');
 title('AttIn Summary')
-ylim([72 77])
 xlabel('Time [s]')
 ylabel('Freqeuncy [Hz]')
 hold on 
@@ -71,7 +69,6 @@ sd = outsummary.std(sel);
 patch([x fliplr(x)], [y-sd  fliplr(y+sd)], 'r', 'FaceAlpha',0.2, 'EdgeColor','none');
 label = {'Static', 'MS1','MS2','MS3','MS4'}
 xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
-ylim([72 77])
 xlabel('Time [s]')
 ylabel('Freqeuncy [Hz]')
 title('AttOut Summary')
@@ -88,7 +85,6 @@ sd = V4summary.std(sel);
 patch([x fliplr(x)], [y-sd  fliplr(y+sd)], 'r', 'FaceAlpha',0.2, 'EdgeColor','none');
 label = {'Static', 'MS1','MS2','MS3','MS4'}
 xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
-ylim([72 77])
 xlabel('Time [s]')
 ylabel('Freqeuncy [Hz]')
 title('V4 Summary')
@@ -99,6 +95,7 @@ hold off
 %% plotting all together 
 sel = 1:5000;
 x = timebar(sel);
+figure
 plot(x,insummary.mean(sel),'r');
 hold on 
 plot(x,outsummary.mean(sel),'b');
@@ -107,12 +104,14 @@ title("Summary of all conditions")
 legend('AttIn','AttOut','V4','AutoUpdate','off')
 label = {'Static', 'MS1','MS2','MS3','MS4'};
 xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
+hold off
 xlabel('Time [s]')
 ylabel('Frequency [Hz]')
 
 %% plotting all together, but only MS 2 & 3 
 sel = 2000:4500;
 x = timebar(sel);
+figure;
 plot(x,insummary.mean(sel),'r');
 hold on 
 plot(x,outsummary.mean(sel),'b');
@@ -120,10 +119,30 @@ plot(x,V4summary.mean(sel));
 title("Summary of all conditions")
 xlim([0.7 3.2])
 legend('AttIn','AttOut','V4','AutoUpdate','off')
-label = {'MS2','MS3','MS4'};
+label = {'MS2','MS3','MS4'};x = timebar(sel);
+
 xl = xline([ 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
+hold off
 xlabel('Time [s]')
 ylabel('Frequency [Hz]')
+
+%% plotting all together with combined median filter orders
+sel = 1:5000;
+x = timebar(sel);
+figure;
+plot(x,summary_struct.in_mean(sel),'r');
+hold on 
+plot(x,summary_struct.out_mean(sel),'b');
+plot(x,summary_struct.V4_mean(sel));
+title("Summary of all conditio0s,multiple median filters")
+legend('AttIn','AttOut','V4','AutoUpdate','off')
+label = {'Static', 'MS1','MS2','MS3','MS4'};
+xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
+hold off
+xlabel('Time [s]')
+ylabel('Frequency [Hz]')
+
+
 %% Plotting derivative of derivative over all recording sites
 sel = 1:5000;
 x = timebar(sel);
