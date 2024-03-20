@@ -1,6 +1,12 @@
 function [grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,medianfiltord)
-%PRE_PROCESSING_PIP_HILB Summary of this function goes here
-%   Detailed explanation goes here
+%PRE_PROCESSING_PIP_HILB Gives back three structures: the Nx1 Hilbert angle
+%structure with the result of the hilbert transformation using fieldtrip
+%for each session (N). Same for the inst. freq structure which includes the
+%derivative of the hilbert transformation. Finally the grand struct
+%includes the median filtered inst. freq as well as some summary
+%descriptives. 
+
+
 % Hilberting, Deriving, median filtering, inst change taking, taking mean 
 % over trials and recording sites 
 
