@@ -1,12 +1,12 @@
 clc 
-clearvars -except med_i medianorders bpwidth
+clear all
 load('attout_dataset.mat')
 load('attin_dataset.mat')
 load("V4_dataset.mat")
 matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files'
 medianfiltord = [20];
 bpwidth = [55 95];
-toi = [0 4.3];
+toi = [0 1];
 store_hilbert = true;
 %% Creating trials and bp filtering 
 % Attin trials
@@ -21,13 +21,8 @@ end
 parfor ii = 1:length(V4_dataset)
     V4_trials(ii) = do_trialselection(V4_dataset(ii).path,V4_dataset(ii).file,V4_dataset(ii).chan,V4_dataset(ii).stimno,bpwidth,toi);
 end 
-%
-%%
-save(fullfile(matpath,sprintf('attin_trials%d%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))),'in_trials');
-save(fullfile(matpath,sprintf('attout_trials%d%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))),'out_trials');
-save(fullfile(matpath,sprintf('V4_trials%d%dtoi%f-%f.mat.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))),'V4_trials');
 
-%% Hilberting, Deriving, median filtering, inst change taking, taking mean 
+% Hilberting, Deriving, median filtering, inst change taking, taking mean 
 % over trials and recording sites 
 
 parfor ii = 1:length(in_trials)
@@ -66,14 +61,14 @@ grand_struct.out_medfiltHilbert = out_medfiltHilbert;
 grand_struct.in_medfiltHilbert = in_medfiltHilbert;
 grand_struct.V4_medfiltHilbert = V4_medfiltHilbert; 
 
-if store_hilbert == true
-    grand_struct.add.in_hilbert = in_hilbertData;
-    grand_struct.add.out_hilbert = out_hilbertData;
-    grand_struct.add.V4_hilbert = V4_hilbertData;
-    %grand_struct.add.inst_freq = in_diffHilbertData;
-    %grand_struct.add.outst_freq = out_diffHilbertData;
-    %grand_struct.add.V4st_freq = V4_diffHilbertData;
-end 
+% Storing processing steps in seperate files
+angles.in_hilbert = in_hilbertData;
+angles.out_hilbert = out_hilbertData;
+angles.V4_hilbert = V4_hilbertData;
+inst_ch.in_inst = in_diffHilbertData;
+inst_ch.out_inst = out_diffHilbertData;
+inst_ch.V4_inst = V4_diffHilbertData;
+
 
 % mean over sites in 
 site_cell = struct2cell(out_medfiltHilbert);
@@ -100,4 +95,11 @@ grand_struct.V4summary.SEM = std(aMat,1,'omitnan')/sqrt(length(V4_medfiltHilbert
 grand_struct.V4summary.std = std(aMat,1,'omitnan');
 
 % saving
-save(fullfile(matpath,sprintf('grand_structbp%d%dmed%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),medianfiltord, toi(1), toi(2))),'grand_struct')
+save(fullfile(matpath,sprintf('grand_structbp%d_%dmed%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),medianfiltord, toi(1), toi(2))),'grand_struct')
+save(fullfile(matpath,'Hilbert_Angle',sprintf('angles_bp%d_%dmed%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),medianfiltord, toi(1), toi(2))),'angles')
+save(fullfile(matpath,'Inst_freq',sprintf('inst_ch_bp%d_%dmed%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),medianfiltord, toi(1), toi(2))),'inst_ch')
+
+%%
+save(fullfile(matpath,'Trials',sprintf('attin_trials%d%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))),'in_trials');
+save(fullfile(matpath,'Trials',sprintf('attout_trials%d%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))),'out_trials');
+save(fullfile(matpath,'Trials',sprintf('V4_trials%d%dtoi%f-%f.mat.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))),'V4_trials');
