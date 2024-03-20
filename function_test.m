@@ -6,38 +6,37 @@ load("V4_dataset.mat")
 matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files'
 medianorders = [20];
 bpwidth = [55 95];
+toi = [0 4.3];
 store_hilbert = true;
 %% Creating trials and bp filtering 
 % Attin trials
 parfor ii = 1:length(attout_dataset)
-    in_trials(ii) = do_trialselection(attin_dataset(ii).path,attin_dataset(ii).file,attin_dataset(ii).chan,attin_dataset(ii).stimno,bpwidth);
+    in_trials(ii) = do_trialselection(attin_dataset(ii).path,attin_dataset(ii).file,[attin_dataset(ii).chan attin_dataset(ii).V4chan{1}],attin_dataset(ii).stimno,bpwidth,toi);
 end 
-
 % Attout trials
 parfor ii = 1:length(attout_dataset)
-    out_trials(ii) = do_trialselection(attout_dataset(ii).path,attout_dataset(ii).file,attout_dataset(ii).chan,attout_dataset(ii).stimno,bpwidth);
+    out_trials(ii) = do_trialselection(attout_dataset(ii).path,attout_dataset(ii).file,[attout_dataset(ii).chan attout_dataset(ii).V4chan{1}],attout_dataset(ii).stimno,bpwidth,toi);
 end 
-
 % AttV4 trials
 parfor ii = 1:length(V4_dataset)
-    V4_trials(ii) = do_trialselection(V4_dataset(ii).path,V4_dataset(ii).file,V4_dataset(ii).chan,V4_dataset(ii).stimno,bpwidth);
+    V4_trials(ii) = do_trialselection(V4_dataset(ii).path,V4_dataset(ii).file,V4_dataset(ii).chan,V4_dataset(ii).stimno,bpwidth,toi);
 end 
 %
 %%
-save(fullfile(matpath,sprintf('attin_trials%d%d',bpwidth(1),bpwidth(2))),'in_trials');
-save(fullfile(matpath,sprintf('attout_trials%d%d',bpwidth(1),bpwidth(2))),'out_trials');
-save(fullfile(matpath,sprintf('V4_trials%d%d',bpwidth(1),bpwidth(2))),'V4_trials');
+save(fullfile(matpath,sprintf('attin_trials%d%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))),'in_trials');
+save(fullfile(matpath,sprintf('attout_trials%d%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))),'out_trials');
+save(fullfile(matpath,sprintf('V4_trials%d%dtoi%f-%f.mat.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))),'V4_trials');
 
 %% Hilberting, Deriving, median filtering, inst change taking, taking mean 
 % over trials and recording sites 
 
 for med_i = 1:length(medianorders)
-clearvars -except med_i medianorders bpwidth store_hilbert
+clearvars -except med_i medianorders bpwidth store_hilbert toi
 matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files'
 
-load(fullfile(matpath,sprintf('attin_trials%d%d',bpwidth(1),bpwidth(2))));
-load(fullfile(matpath,sprintf('attout_trials%d%d',bpwidth(1),bpwidth(2))));
-load(fullfile(matpath,sprintf('V4_trials%d%d',bpwidth(1),bpwidth(2))));
+load(fullfile(matpath,sprintf('attin_trials%d%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))));
+load(fullfile(matpath,sprintf('attout_trials%d%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))));
+load(fullfile(matpath,sprintf('V4_trials%d%dtoi%f-%f.mat.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))));
 
 
 medianfiltord = medianorders(med_i);
@@ -81,9 +80,9 @@ if store_hilbert == true
     grand_struct.add.in_hilbert = in_hilbertData;
     grand_struct.add.out_hilbert = out_hilbertData;
     grand_struct.add.V4_hilbert = V4_hilbertData;
-    grand_struct.add.inst_freq = in_diffHilbertData;
-    grand_struct.add.outst_freq = out_diffHilbertData;
-    grand_struct.add.V4st_freq = V4_diffHilbertData;
+    %grand_struct.add.inst_freq = in_diffHilbertData;
+    %grand_struct.add.outst_freq = out_diffHilbertData;
+    %grand_struct.add.V4st_freq = V4_diffHilbertData;
 end 
 
 % mean over sites in 
@@ -111,7 +110,7 @@ grand_struct.V4summary.SEM = std(aMat,1,'omitnan')/sqrt(length(V4_medfiltHilbert
 grand_struct.V4summary.std = std(aMat,1,'omitnan');
 
 % saving
-save(fullfile(matpath,sprintf('grand_structbp%d%dmed%d.mat',bpwidth(1),bpwidth(2),medianfiltord)),'grand_struct')
+save(fullfile(matpath,sprintf('grand_structbp%d%dmed%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),medianfiltord, toi(1), toi(2))),'grand_struct')
 end
 
 
