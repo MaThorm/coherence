@@ -3,11 +3,11 @@ clear all
 load('attout_dataset.mat')
 load('attin_dataset.mat')
 load("V4_dataset.mat")
+saving = false; 
 matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files'
 medianfiltord = [20];
 bpwidth = [55 95];
 toi = [0 1];
-store_hilbert = true;
 %% Creating trials and bp filtering 
 % Attin trials
 parfor ii = 1:length(attout_dataset)
@@ -65,8 +65,8 @@ grand_struct.V4_medfiltHilbert = V4_medfiltHilbert;
 angles.in_hilbert = in_hilbertData;
 angles.out_hilbert = out_hilbertData;
 angles.V4_hilbert = V4_hilbertData;
-inst_ch.in_inst = in_diffHilbertData;
-inst_ch.out_inst = out_diffHilbertData;
+inst_ch.in_inst = in_diffHilbertData; % named it wrong and too lazy to change
+inst_ch.out_inst = out_diffHilbertData; % should be inst_freq
 inst_ch.V4_inst = V4_diffHilbertData;
 
 
@@ -95,10 +95,11 @@ grand_struct.V4summary.SEM = std(aMat,1,'omitnan')/sqrt(length(V4_medfiltHilbert
 grand_struct.V4summary.std = std(aMat,1,'omitnan');
 
 % saving
-save(fullfile(matpath,sprintf('grand_structbp%d_%dmed%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),medianfiltord, toi(1), toi(2))),'grand_struct')
-save(fullfile(matpath,'Hilbert_Angle',sprintf('angles_bp%d_%dmed%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),medianfiltord, toi(1), toi(2))),'angles')
-save(fullfile(matpath,'Inst_freq',sprintf('inst_ch_bp%d_%dmed%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),medianfiltord, toi(1), toi(2))),'inst_ch')
-
+if saving == true 
+    save(fullfile(matpath,sprintf('grand_structbp%d_%dmed%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),medianfiltord, toi(1), toi(2))),'grand_struct')
+    save(fullfile(matpath,'Hilbert_Angle',sprintf('angles_bp%d_%dmed%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),medianfiltord, toi(1), toi(2))),'angles')
+    save(fullfile(matpath,'Inst_freq',sprintf('inst_ch_bp%d_%dmed%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),medianfiltord, toi(1), toi(2))),'inst_ch')
+end 
 %%
 save(fullfile(matpath,'Trials',sprintf('attin_trials%d%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))),'in_trials');
 save(fullfile(matpath,'Trials',sprintf('attout_trials%d%dtoi%f-%f.mat',bpwidth(1),bpwidth(2),toi(1), toi(2))),'out_trials');

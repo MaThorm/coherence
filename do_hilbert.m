@@ -5,14 +5,15 @@ function [hilbertData,diffHilbertData,medfiltHilbert,instchange] = do_hilbert(tr
 
 % Hilberting
 cfg = [];
-cfg.channel = 'all';
+cfg.channel = 'all'
 cfg.hilbert = 'angle';
 hilbertData = ft_preprocessing(cfg,trials);
 hilbertData.trial = cellfun(@unwrap,hilbertData.trial,'UniformOutput',false);
 
+
 % Ableiting 
 cfg = [];
-cfg.channel = 'all';
+cfg.channel = trials.label{1}
 cfg.absdiff = 'yes';
 diffHilbertData = ft_preprocessing(cfg,hilbertData);
 diffHilbertData.trial = cellfun(@(x) x*1000/(pi*2),diffHilbertData.trial,'UniformOutput',false);
@@ -27,7 +28,7 @@ end
 
 %Median Filtering
 cfg = [];
-cfg.channel = 'all';
+cfg.channel = trials.label{1}
 cfg.medianfilter = 'yes';
 cfg.medianfiltord = medianfiltord;
 medfiltHilbert = ft_preprocessing(cfg,diffHilbertData);

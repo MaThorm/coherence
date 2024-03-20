@@ -1,6 +1,6 @@
 clc
 clear all 
-bpwidth = [30 100];
+bpwidth = [55 95];
 medfiltord = [4 8 12 16 20];
 matpath = "/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files"
 %
