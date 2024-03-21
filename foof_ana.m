@@ -1,40 +1,15 @@
-clc 
-clear 
-load('attin_dataset.mat')
+clc
+clear all
 load('attout_dataset.mat')
-load('V4_dataset.mat')
-%
-matpath = "/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files";
-figurepath = "/home/mthormann@brain.uni-bremen.de/V1V4coherence/03_results_max/fooof/"
+load('attin_dataset.mat')
+load("V4_dataset.mat")
 bpwidth = [1 150];
-toilim = [0 1];
-%%
-parfor ii = 1:length(attin_dataset)
-    in_trials(ii) = do_trialselection(attin_dataset(ii).path,attin_dataset(ii).file,attin_dataset(ii).chan,attin_dataset(ii).stimno,bpwidth,toilim);
-end 
-parfor ii = 1:length(attout_dataset)
-    out_trials(ii) = do_trialselection(attout_dataset(ii).path,attout_dataset(ii).file,attout_dataset(ii).chan,attout_dataset(ii).stimno,bpwidth,toilim);
-end 
-parfor ii = 1:length(V4_dataset)
-    V4_trials(ii) = do_trialselection(V4_dataset(ii).path,V4_dataset(ii).file,V4_dataset(ii).chan,V4_dataset(ii).stimno,bpwidth,toilim);
-end 
-
-%%
-save(fullfile(matpath,sprintf("attin_trials%d%dtoi%d%d.mat",bpwidth(1),bpwidth(2),toilim(1),toilim(2))),"in_trials");
-save(fullfile(matpath,sprintf("attout_trials%d%dtoi%d%d.mat",bpwidth(1),bpwidth(2),toilim(1),toilim(2))),"out_trials");
-save(fullfile(matpath,sprintf("V4_trials%d%dtoi%d%d.mat",bpwidth(1),bpwidth(2),toilim(1),toilim(2))),"V4_trials");
+toi = [2.3 4.3];
+matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files'
+[in_trials,out_trials,V4_trials] = pre_processing_pip_trials(attin_dataset,attout_dataset,V4_dataset,bpwidth,toi)
 
 
-%%
-clearvars -except toilim bpwidth matpath figurepath
-attin = load(fullfile(matpath,sprintf("attin_trials%d%dtoi%d%d.mat",bpwidth(1),bpwidth(2),toilim(1),toilim(2))));
-attout = load(fullfile(matpath,sprintf("attout_trials%d%dtoi%d%d.mat",bpwidth(1),bpwidth(2),toilim(1),toilim(2))));
-V4 = load(fullfile(matpath,sprintf("V4_trials%d%dtoi%d%d.mat",bpwidth(1),bpwidth(2),toilim(1),toilim(2))));
-in_trials = attin.in_trials;
-out_trials = attout.out_trials;
-V4_trials = V4.V4_trials;
-
-%% Foofing all the things
+% Foofing all the things
 for ii = 1:length(in_trials)
     [in_foof.fractal(ii), in_foof.original(ii), in_foof.osc(ii) in_foof.osc_alt(ii)] = do_foof(in_trials(ii))
     [out_foof.fractal(ii), out_foof.original(ii), out_foof.osc(ii) out_foof.osc_alt(ii)] = do_foof(out_trials(ii))
@@ -67,12 +42,12 @@ foof_summary.out_all.osc_alt = out_foof.osc_alt;
 foof_summary.V4_all.fractal = V4_foof.fractal;
 foof_summary.V4_all.original = V4_foof.original;
 foof_summary.V4_all.osc_alt = V4_foof.osc_alt;
-save(fullfile(matpath,sprintf("osc_mean_bp%d%d_toi%d%d.mat",bpwidth(1),bpwidth(2),toilim(1),toilim(2))),"foof_summary")
 
 
 
 %% Plottig a random session with fractal, original & oscillatory component
-num = 2;
+num = 4;
+for num = 1:16
 hold on 
 plot(log(in_foof.original(1).freq), log(in_foof.original(num).powspctrm),'k');
 plot(log(in_foof.original(1).freq), log(in_foof.fractal(num).powspctrm));
@@ -81,6 +56,9 @@ xlabel('log-freq'); ylabel('log-power'); grid on;
 legend({'original','fractal','oscillatory = spectrum/fractal'},'location','southwest');
 title('oscillatory = spectrum / fractal');
 hold off
+w = waitforbuttonpress;
+clf
+end 
 %% Plotting mean oscillatory component over trials for all conditions 
 figure('units','normalized','outerposition',[0 0 1 1]); hold on 
 plot(log(in_foof.original(1).freq), log(in_foof.osc_mean),'r');
@@ -91,7 +69,6 @@ xticklabels(exp(x))
 legend('Attin','Attout','V4','autoupdate','off')
 yline([0])
 hold off
-saveas(gcf,fullfile(figurepath,sprintf('foofmean_bp%d%d_toi%d%d.jpg',bpwidth(1),bpwidth(2),toilim(1),toilim(2))))
 
 %% Plotting mean original component of a random session 
 figure('units','normalized','outerposition',[0 0 1 1]); hold on 

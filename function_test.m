@@ -3,11 +3,11 @@ clear all
 load('attout_dataset.mat')
 load('attin_dataset.mat')
 load("V4_dataset.mat")
-saving = false; 
+saving = true; 
 matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files'
 medianfiltord = [20];
 bpwidth = [55 95];
-toi = [0 1];
+toi = [-100 100];
 %% Creating trials and bp filtering 
 % Attin trials
 parfor ii = 1:length(attout_dataset)

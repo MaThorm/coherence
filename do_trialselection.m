@@ -71,7 +71,7 @@ end
 cfg = [];
 cfg.bpfilter = 'yes';
 cfg.bpfreq = bpwidth;
-cfg.bpfilttype = 'fir';
+cfg.bpfilttype = 'fir'; % Could different fooof results be due to this?
 trials = ft_preprocessing(cfg,trials);
 %
 end 

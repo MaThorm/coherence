@@ -6,6 +6,12 @@ function [grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out
 %includes the median filtered inst. freq as well as some summary
 %descriptives. 
 
+% Input should be
+% Result of pre_processing_pip_trials for 
+% Attended 
+% Unattended
+% V4
+% medianfiltord: order of the median filter applied
 
 % Hilberting, Deriving, median filtering, inst change taking, taking mean 
 % over trials and recording sites 

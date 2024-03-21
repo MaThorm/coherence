@@ -2,10 +2,10 @@
 clc 
 clear all
 dir = "/data/projects/V1V4coherence/02_analysis_max/git_repos/structure";
-load(fullfile(dir,"attin_trials1150toi04.mat"));
+load(fullfile(dir,"attout_trials1150toi04.mat"));
 %%
 cfg = [];
-ft_databrowser(cfg,in_trials(10))
+ft_databrowser(cfg,out_trials(10))
 
 
 %%

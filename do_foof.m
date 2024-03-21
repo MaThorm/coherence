@@ -7,6 +7,7 @@ cfg.pad           = 6;
 cfg.tapsmofrq     = 2;
 cfg.method        = 'mtmfft';
 cfg.output        = 'fooof_aperiodic';
+cfg.channel       = trials.label{1}
 fractal = ft_freqanalysis(cfg, trials);
 cfg.output        = 'pow';
 original = ft_freqanalysis(cfg, trials);

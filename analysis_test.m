@@ -1,18 +1,21 @@
 clc
-clear all 
+clear all
+load('attout_dataset.mat')
+load('attin_dataset.mat')
+load("V4_dataset.mat")
 bpwidth = [55 95];
-medfiltord = [4 8 12 16 20];
-matpath = "/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files"
-%
-grand_struct = load(fullfile(matpath,sprintf('grand_structbp%d%dmed%d.mat',bpwidth(1),bpwidth(2),medfiltord(5))));
-%summary_struct = load(fullfile(matpath,sprintf('summary_structbp%d%dmed%d_%d_%d_%d_%d',bpwidth(1),bpwidth(2),medfiltord(1),medfiltord(2),medfiltord(3),medfiltord(4),medfiltord(5))));
-attin_inst = grand_struct.grand_struct.in_medfiltHilbert;
-attout_inst = grand_struct.grand_struct.out_medfiltHilbert;
-insummary = grand_struct. grand_struct.insummary;
-outsummary = grand_struct.grand_struct.outsummary;
-V4_inst = grand_struct.grand_struct.V4_medfiltHilbert;
-V4summary = grand_struct.grand_struct.V4summary;
-%summary_struct = summary_struct.summary_struct
+toi = [-100 100];
+medianfiltord = 20;
+matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files'
+
+[in_trials,out_trials,V4_trials] = pre_processing_pip_trials(attin_dataset,attout_dataset,V4_dataset,bpwidth,toi)
+[grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,medianfiltord)
+attin_inst = grand_struct.in_medfiltHilbert;
+attout_inst = grand_struct.out_medfiltHilbert;
+insummary = grand_struct.insummary;
+outsummary = grand_struct.outsummary;
+V4_inst = grand_struct.V4_medfiltHilbert;
+V4summary = grand_struct.V4summary;
 timebar = -1.3:0.001:5;
 
 %% Plotting all attin sessions with error bars 
@@ -104,6 +107,7 @@ title("Summary of all conditions")
 legend('AttIn','AttOut','V4','AutoUpdate','off')
 label = {'Static', 'MS1','MS2','MS3','MS4'};
 xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
+ylim([60 80])
 hold off
 xlabel('Time [s]')
 ylabel('Frequency [Hz]')
