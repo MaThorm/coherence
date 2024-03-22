@@ -8,7 +8,9 @@ cfg = [];
 cfg.channel = 'all'
 cfg.hilbert = 'angle';
 hilbertData = ft_preprocessing(cfg,trials);
-hilbertData.trial = cellfun(@unwrap,hilbertData.trial,'UniformOutput',false);
+%hilbertData.trial =cellfun(@unwrap,hilbertData.trial,'UniformOutput',false); old cellfun
+hilbertData.trial = cellfun(@(x) unwrap(x,[],2),hilbertData.trial,'UniformOutput',false);
+
 
 
 % Ableiting 
@@ -17,6 +19,7 @@ cfg.channel = trials.label{1}
 cfg.absdiff = 'yes';
 diffHilbertData = ft_preprocessing(cfg,hilbertData);
 diffHilbertData.trial = cellfun(@(x) x*1000/(pi*2),diffHilbertData.trial,'UniformOutput',false);
+
 % Old Median filtering 
 %{
 medfiltHilbert = diffHilbertData;
