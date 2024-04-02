@@ -3,7 +3,7 @@ clear all
 dir = "/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files";
 toi = [2.3 4.3];
 bp = [52 78];
-medfiltord = 20;
+medfiltord = 1;
 load('attout_dataset.mat')
 load('attin_dataset.mat')
 load("V4_dataset.mat")
@@ -51,30 +51,73 @@ new = cat(2,in_plv_m,out_plv_m);
 figure;
 boxplot(new,'Labels',{'PLV attended','PLV unattended'})
 ylabel('PLV')
-title('PLV in the frequency range from 52 to 78 Hz')
+title('PLV in the frequency range from 52 to 78 Hz using conjugate method')
+ylim([0 0.3])
 [p, value] = signrank(in_plv_m, out_plv_m)
 
-
 %% Calculating PC the Iris way
-for i_sess = 1:length(angles.in_hilbert)
-    contrib = zeros(1,2001);
-    dCos = zeros(1,2001);
-    dSin = zeros(1,2001);
-    var = angles.in_hilbert(i_sess);
-    for i_trial = 1:length(var.trial)
-        temp_array = NaN(1,2001);
-        temp_array(:,1:length(var.trial{i_trial})) = 1;
-        phase_diff = var.trial{i_trial}(1,:) - var.trial{i_trial}(2,:);
-        contrib = contrib + ~isnan(temp_array);
-        dCos(:,1:length(var.trial{i_trial})) = dCos(:,1:length(var.trial{i_trial})) + cos(phase_diff);
-        dSin(:,1:length(var.trial{i_trial})) = dSin(:,1:length(var.trial{i_trial})) + cos(phase_diff);
+comb_data = angles.in_hilbert;
+counter = 1;
+for i_sess = 1:length(comb_data)
+    var = comb_data(i_sess);
+    for i_chan = 1:length(var.label)-1
+        contrib = zeros(1,2001);
+        dCos = zeros(1,2001);
+        dSin = zeros(1,2001);
+        for i_trial = 1:length(var.trial)
+            temp_array = NaN(1,2001);
+            temp_array(:,1:length(var.trial{i_trial})) = 1;
+            phase_diff = var.trial{i_trial}(1,:) - var.trial{i_trial}(i_chan+1,:);
+            contrib = contrib + ~isnan(temp_array);
+            dCos(:,1:length(var.trial{i_trial})) = dCos(:,1:length(var.trial{i_trial})) + cos(phase_diff);
+            dSin(:,1:length(var.trial{i_trial})) = dSin(:,1:length(var.trial{i_trial})) + sin(phase_diff);
+        end 
+        dCos = dCos./contrib;
+        dSin = dSin./contrib;
+        VL = sqrt((dCos).^2+(dSin).^2);
+        VLEXP = sqrt(pi)./(2.*sqrt(contrib));
+        VL = VL - VLEXP;
+        meanAngle = acos((dCos)./VL);
+        in_meanVL(counter) = mean(VL);
+        counter = counter + 1;
     end 
-    dCos = dCos./contrib;
-    dSin = dSin./contrib;
-    VL = sqrt((dCos).^2+(dSin).^2);
-    VLEXP = sqrt(pi)./(2.*sqrt(contrib));
-    VL = VL - VLEXP;
-    meanAngle = acos((dCos)./VL);
-    meanVL(i_sess) = mean(VL);
 end 
-mean_meanVL = mean(meanVL)
+in_mean_meanVL = mean(in_meanVL)
+
+comb_data = angles.out_hilbert;
+counter = 1;
+for i_sess = 1:length(comb_data)
+    var = comb_data(i_sess);
+    for i_chan = 1:length(var.label)-1
+        contrib = zeros(1,2001);
+        dCos = zeros(1,2001);
+        dSin = zeros(1,2001);
+        for i_trial = 1:length(var.trial)
+            temp_array = NaN(1,2001);
+            temp_array(:,1:length(var.trial{i_trial})) = 1;
+            phase_diff = var.trial{i_trial}(1,:) - var.trial{i_trial}(i_chan+1,:);
+            contrib = contrib + ~isnan(temp_array);
+            dCos(:,1:length(var.trial{i_trial})) = dCos(:,1:length(var.trial{i_trial})) + cos(phase_diff);
+            dSin(:,1:length(var.trial{i_trial})) = dSin(:,1:length(var.trial{i_trial})) + sin(phase_diff);
+        end 
+        dCos = dCos./contrib;
+        dSin = dSin./contrib;
+        VL = sqrt((dCos).^2+(dSin).^2);
+        VLEXP = sqrt(pi)./(2.*sqrt(contrib));
+        VL = VL - VLEXP;
+        meanAngle = acos((dCos)./VL);
+        out_meanVL(counter) = mean(VL);
+        counter = counter + 1;
+    end 
+end 
+out_mean_meanVL = mean(out_meanVL)
+
+%%
+new = cat(1,in_meanVL,out_meanVL);
+[p, value] = signrank(in_meanVL', out_meanVL')
+figure;
+boxplot(new','Labels',{'PLV attended','PLV unattended'})
+ylabel('PLV')
+ylim([0 0.21])
+title('PLVs per trial, BP-filter 52 - 78 Hz')
+
