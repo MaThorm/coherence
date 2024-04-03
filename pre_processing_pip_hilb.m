@@ -1,4 +1,4 @@
-function [grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,medianfiltord)
+function [grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,medianfiltord,save_hilbert)
 %PRE_PROCESSING_PIP_HILB Gives back three structures: the Nx1 Hilbert angle
 %structure with the result of the hilbert transformation using fieldtrip
 %for each session (N). Same for the inst. freq structure which includes the
@@ -12,6 +12,8 @@ function [grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out
 % Unattended
 % V4
 % medianfiltord: order of the median filter applied
+% save_hilbert: whether data about angles and not median filtered inst.
+% freq should be saved
 
 % Hilberting, Deriving, median filtering, inst change taking, taking mean 
 % over trials and recording sites 
@@ -50,14 +52,25 @@ end
 
 grand_struct.out_medfiltHilbert = out_medfiltHilbert;
 grand_struct.in_medfiltHilbert = in_medfiltHilbert;
-grand_struct.V4_medfiltHilbert = V4_medfiltHilbert; 
+grand_struct.V4_medfiltHilbert = V4_medfiltHilbert;
+
+if save_hilbert == true
+   grand_struct.in_hilbertData = in_hilbertData;
+   grand_struct.out_hilbertData = out_hilbertData;
+   grand_struct.V4_hilbertData = V4_hilbertData;
+   grand_struct.in_diffHilbertData = in_diffHilbertData;
+   grand_struct.out_diffHilbertData = out_diffHilbertData;
+   grand_struct.V4_diffHilbertData = V4_diffHilbertData;
+end 
+
+
 
 % Storing processing steps in seperate files
 angles.in_hilbert = in_hilbertData;
 angles.out_hilbert = out_hilbertData;
 angles.V4_hilbert = V4_hilbertData;
-inst_freq.in_inst = in_diffHilbertData; % named it wrong and too lazy to change
-inst_freq.out_inst = out_diffHilbertData; % should be inst_freq
+inst_freq.in_inst = in_diffHilbertData; 
+inst_freq.out_inst = out_diffHilbertData; 
 inst_freq.V4_inst = V4_diffHilbertData;
 
 
