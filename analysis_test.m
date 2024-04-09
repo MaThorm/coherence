@@ -3,13 +3,20 @@ clear all
 load('attout_dataset.mat')
 load('attin_dataset.mat')
 load("V4_dataset.mat")
-bpwidth = [55 95];
-toi = [-100 100];
+bpwidth = [30 100];
+toi = [2.3 4.3];
 medianfiltord = 20;
-matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files'
+save_hilbert = false;
+fs = 1000;
+th = 0.01;
+matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files';
 
 [in_trials,out_trials,V4_trials] = pre_processing_pip_trials(attin_dataset,attout_dataset,V4_dataset,bpwidth,toi)
-[grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,medianfiltord)
+[in_trials,testing_struct] = do_SSD(in_trials,fs,th)
+[out_trials] = do_SSD(out_trials,fs,th)
+[V4_trials] = do_SSD(V4_trials,fs,th)
+[grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,medianfiltord,save_hilbert)
+
 attin_inst = grand_struct.in_medfiltHilbert;
 attout_inst = grand_struct.out_medfiltHilbert;
 insummary = grand_struct.insummary;
@@ -97,7 +104,7 @@ hold off
 
 %% plotting all together 
 sel = 1:5000;
-x = timebar(sel);
+x = timebar(sel);untitled
 figure
 plot(x,insummary.mean(sel),'r');
 hold on 
@@ -113,7 +120,7 @@ xlabel('Time [s]')
 ylabel('Frequency [Hz]')
 
 %% plotting all together, but only MS 2 & 3 
-sel = 2000:4500;
+sel = 1:length(outsummary.mean);
 x = timebar(sel);
 figure;
 plot(x,insummary.mean(sel),'r');
@@ -121,27 +128,10 @@ hold on
 plot(x,outsummary.mean(sel),'b');
 plot(x,V4summary.mean(sel));
 title("Summary of all conditions")
-xlim([0.7 3.2])
 legend('AttIn','AttOut','V4','AutoUpdate','off')
 label = {'MS2','MS3','MS4'};x = timebar(sel);
 
-xl = xline([ 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
-hold off
-xlabel('Time [s]')
-ylabel('Frequency [Hz]')
-
-%% plotting all together with combined median filter orders
-sel = 1:5000;
-x = timebar(sel);
-figure;
-plot(x,summary_struct.in_mean(sel),'r');
-hold on 
-plot(x,summary_struct.out_mean(sel),'b');
-plot(x,summary_struct.V4_mean(sel));
-title("Summary of all conditio0s,multiple median filters")
-legend('AttIn','AttOut','V4','AutoUpdate','off')
-label = {'Static', 'MS1','MS2','MS3','MS4'};
-xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
+%xl = xline([ 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
 hold off
 xlabel('Time [s]')
 ylabel('Frequency [Hz]')
@@ -161,17 +151,6 @@ title('AttOut')
 subplot(3,1,3)
 plot(x,V4summary.change_mean(sel))
 title('V4')
-
-%% plotting some shit
-for ii = 1:length(attin_instchange)
-    subplot(4,4,ii)
-    plot(attin_instchange(ii).sess_mean)
-end 
-%% 
-for ii = 1:length(grand_struct.grand_struct.in_medfiltHilbert)
-    subplot(4,4,ii)
-    plot(grand_struct.grand_struct.in_medfiltHilbert(ii).sess_mean)
-end 
 
 %% more derivative testing
 for ii = 1:length(V4_inst)
