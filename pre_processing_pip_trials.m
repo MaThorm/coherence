@@ -11,11 +11,11 @@ function [in_trials,out_trials,V4_trials] = pre_processing_pip(attin_dataset,att
 % Creating trials and bp filtering 
 % Attin trials
 parfor ii = 1:length(attout_dataset)
-    in_trials(ii) = do_trialselection(attin_dataset(ii).path,attin_dataset(ii).file,[attin_dataset(ii).chan] ,attin_dataset(ii).stimno,bpwidth,toi);
+    in_trials(ii) = do_trialselection(attin_dataset(ii).path,attin_dataset(ii).file,[attin_dataset(ii).chan attin_dataset(ii).V4chan{1}] ,attin_dataset(ii).stimno,bpwidth,toi);
 end 
 % Attout trials
 parfor ii = 1:length(attout_dataset)
-    out_trials(ii) = do_trialselection(attout_dataset(ii).path,attout_dataset(ii).file,[attout_dataset(ii).chan] ,attout_dataset(ii).stimno,bpwidth,toi);
+    out_trials(ii) = do_trialselection(attout_dataset(ii).path,attout_dataset(ii).file,[attout_dataset(ii).chan attin_dataset(ii).V4chan{1}] ,attout_dataset(ii).stimno,bpwidth,toi);
 end 
 % AttV4 trials
 parfor ii = 1:length(V4_dataset)
@@ -23,5 +23,5 @@ parfor ii = 1:length(V4_dataset)
 end 
 end 
 
-%attin_dataset(ii).V4chan{1}]
+%
 %attout_dataset(ii).V4chan{1}]

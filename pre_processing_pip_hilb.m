@@ -54,16 +54,6 @@ grand_struct.out_medfiltHilbert = out_medfiltHilbert;
 grand_struct.in_medfiltHilbert = in_medfiltHilbert;
 grand_struct.V4_medfiltHilbert = V4_medfiltHilbert;
 
-if save_hilbert == true
-   grand_struct.in_hilbertData = in_hilbertData;
-   grand_struct.out_hilbertData = out_hilbertData;
-   grand_struct.V4_hilbertData = V4_hilbertData;
-   grand_struct.in_diffHilbertData = in_diffHilbertData;
-   grand_struct.out_diffHilbertData = out_diffHilbertData;
-   grand_struct.V4_diffHilbertData = V4_diffHilbertData;
-end 
-
-
 
 % Storing processing steps in seperate files
 angles.in_hilbert = in_hilbertData;
