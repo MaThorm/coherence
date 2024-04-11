@@ -9,14 +9,14 @@ bpfilt = true;
 bpwidth = [30 100];
 
 % SSD parameters
-toi = [3.3 4.3];
+toi = [2.3 4.3];
 fs = 1000;
 th = 0.01;
 
 % Hilbert parameters
-filttype = "sgolay";
-framelen = 31;
-filtord = 3;
+filttype = "sgolay"; %either medfilt or sgolay
+framelen = 21;
+filtord = 1;
 
 
 matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files';
@@ -55,7 +55,7 @@ end
 %% Plotting all attout sessions with error bars 
 figure;
 sgtitle('Instantaneous frequencies per recording site AttOut')
-sel = 1:5000;
+sel = 1:length(outsummary.mean);
 x = timebar(sel);
 for ii = 1:length(attout_inst)
     subplot(4,4,ii)
@@ -69,7 +69,7 @@ end
 
 %% Plotting AttIn Summary
 figure; 
-sel = 1:5000;
+sel = 1:length(insummary.mean);
 x = timebar(sel)
 y = insummary.mean(sel);
 sd = insummary.std(sel);
@@ -83,7 +83,7 @@ xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
 plot(x,y,'r');
 hold off
 %% Plotting attout Summary
-sel = 1:5000;
+sel = 1:length(outsummary.mean);
 x = timebar(sel)
 figure
 y = outsummary.mean(sel);
@@ -100,7 +100,7 @@ hold off
 
 %% plotting V4 summary 
 figure
-sel = 1:5000;
+sel = 1:length(V4summary.mean);
 x = timebar(sel)
 y = V4summary.mean(sel);
 sd = V4summary.std(sel);
@@ -115,8 +115,8 @@ plot(x,y,'r');
 hold off
 
 %% plotting all together 
-sel = 1:5000;
-x = timebar(sel);untitled
+sel = 1:length(outsummary.mean);
+x = timebar(sel);
 figure
 plot(x,insummary.mean(sel),'r');
 hold on 
