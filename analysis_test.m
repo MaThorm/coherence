@@ -3,19 +3,31 @@ clear all
 load('attout_dataset.mat')
 load('attin_dataset.mat')
 load("V4_dataset.mat")
+
+% Trial preprocessing parameters
+bpfilt = true;
 bpwidth = [30 100];
-toi = [2.3 4.3];
-medianfiltord = 20;
-save_hilbert = false;
+
+% SSD parameters
+toi = [3.3 4.3];
 fs = 1000;
 th = 0.01;
+
+% Hilbert parameters
+filttype = "sgolay";
+framelen = 31;
+filtord = 3;
+
+
 matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files';
 
-[in_trials,out_trials,V4_trials] = pre_processing_pip_trials(attin_dataset,attout_dataset,V4_dataset,bpwidth,toi)
-[in_trials,testing_struct] = do_SSD(in_trials,fs,th)
+[in_trials] = pre_processing_pip_trials(attin_dataset,bpfilt,bpwidth,toi)
+[out_trials] = pre_processing_pip_trials(attout_dataset,bpfilt,bpwidth,toi)
+[V4_trials] = pre_processing_pip_trials(V4_dataset,bpfilt,bpwidth,toi)
+[in_trials] = do_SSD(in_trials,fs,th)
 [out_trials] = do_SSD(out_trials,fs,th)
 [V4_trials] = do_SSD(V4_trials,fs,th)
-[grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,medianfiltord,save_hilbert)
+[grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,filttype,framelen,filtord)
 
 attin_inst = grand_struct.in_medfiltHilbert;
 attout_inst = grand_struct.out_medfiltHilbert;
@@ -96,7 +108,7 @@ patch([x fliplr(x)], [y-sd  fliplr(y+sd)], 'r', 'FaceAlpha',0.2, 'EdgeColor','no
 label = {'Static', 'MS1','MS2','MS3','MS4'}
 xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
 xlabel('Time [s]')
-ylabel('Freqeuncy [Hz]')
+ylabel('Freqeuncy [Hz]')%dividing the remaining variance of the largest component by the remaining variance of all other 
 title('V4 Summary')
 hold on 
 plot(x,y,'r');
@@ -129,14 +141,16 @@ plot(x,outsummary.mean(sel),'b');
 plot(x,V4summary.mean(sel));
 title("Summary of all conditions")
 legend('AttIn','AttOut','V4','AutoUpdate','off')
-label = {'MS2','MS3','MS4'};x = timebar(sel);
-
+label = {'MS2','MS3','MS4'};
+%xlim([0.8 3.2])
 %xl = xline([ 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
 hold off
 xlabel('Time [s]')
 ylabel('Frequency [Hz]')
 
-
+%% Quick derivative check
+a = diff(insummary.mean(sel))
+plot(a)
 %% Plotting derivative of derivative over all recording sites
 sel = 1:5000;
 x = timebar(sel);
@@ -226,3 +240,19 @@ ylim([-0.15 0.15])
 yyaxis right
 plot(timebar(sel),V4summary.mean(sel));
 ylabel('Frequency [Hz]')
+ 
+%% Testing script of ssd 
+% EXAMPLE:
+% Creation of some simple timeserie
+y  = sin(2*pi*5*(0:999)/1000);
+y2 = 0.1*sin(2*pi*15*(0:999)/1000);
+y3 = y+y2;
+y3(500:999) = y3(500:999)+sin(2*pi*75*(500:999)/1000);
+
+x1 = sin(2*pi*5*(0:999)/1000);
+x2 = [zeros(1,500) sin(2*pi*75*(501:1000)/1000)];
+x3 = 0.1*sin(2*pi*15*(0:999)/1000);
+
+v  = y3;
+% Sampling frequency 1000 and threshold of 0.005
+SSDcomponents = SSD(v,1000,0.01);

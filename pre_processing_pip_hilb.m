@@ -1,4 +1,4 @@
-function [grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,medianfiltord,save_hilbert)
+function [grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,filttype,framelen,filtord)
 %PRE_PROCESSING_PIP_HILB Gives back three structures: the Nx1 Hilbert angle
 %structure with the result of the hilbert transformation using fieldtrip
 %for each session (N). Same for the inst. freq structure which includes the
@@ -19,15 +19,15 @@ function [grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out
 % over trials and recording sites 
 
 parfor ii = 1:length(in_trials)
-    [in_hilbertData(ii), in_diffHilbertData(ii), in_medfiltHilbert(ii),in_instchange(ii)] = do_hilbert(in_trials(ii),medianfiltord); 
+    [in_hilbertData(ii), in_diffHilbertData(ii), in_medfiltHilbert(ii),in_instchange(ii)] = do_hilbert(in_trials(ii),filttype,framelen,filtord); 
 end 
 
 parfor ii = 1:length(out_trials)
-    [out_hilbertData(ii), out_diffHilbertData(ii), out_medfiltHilbert(ii),out_instchange(ii)] = do_hilbert(out_trials(ii),medianfiltord); 
+    [out_hilbertData(ii), out_diffHilbertData(ii), out_medfiltHilbert(ii),out_instchange(ii)] = do_hilbert(out_trials(ii),filttype,framelen,filtord); 
 end 
 
 parfor ii = 1:length(V4_trials)
-    [V4_hilbertData(ii), V4_diffHilbertData(ii), V4_medfiltHilbert(ii), V4_instchange(ii)] = do_hilbert(V4_trials(ii),medianfiltord); 
+    [V4_hilbertData(ii), V4_diffHilbertData(ii), V4_medfiltHilbert(ii), V4_instchange(ii)] = do_hilbert(V4_trials(ii),filttype,framelen,filtord); 
 end 
 
 % mean over trials in 
