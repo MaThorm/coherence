@@ -17,26 +17,49 @@ th = 0.01;
 filttype = "sgolay"; %either medfilt or sgolay
 framelen = 21;
 filtord = 1;
-
-
+ord = [1 3 5];
+len = [11 21 31]
 matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files';
-
-[in_trials] = pre_processing_pip_trials(attin_dataset,bpfilt,bpwidth,toi)
-[out_trials] = pre_processing_pip_trials(attout_dataset,bpfilt,bpwidth,toi)
-[V4_trials] = pre_processing_pip_trials(V4_dataset,bpfilt,bpwidth,toi)
-[in_trials] = do_SSD(in_trials,fs,th)
-[out_trials] = do_SSD(out_trials,fs,th)
-[V4_trials] = do_SSD(V4_trials,fs,th)
-[grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,filttype,framelen,filtord)
-
-attin_inst = grand_struct.in_medfiltHilbert;
-attout_inst = grand_struct.out_medfiltHilbert;
-insummary = grand_struct.insummary;
-outsummary = grand_struct.outsummary;
-V4_inst = grand_struct.V4_medfiltHilbert;
-V4summary = grand_struct.V4summary;
-timebar = -1.3:0.001:5;
-
+paths = '/home/mthormann@brain.uni-bremen.de/V1V4coherence/03_results_max/inst_freq_loop/sgolay_filts/'
+for i_ord = 1:length(ord)
+    filtord = ord(i_ord)
+    for i_len = 1:length(len)
+        framelen = len(i_len)
+        [in_trials] = pre_processing_pip_trials(attin_dataset,bpfilt,bpwidth,toi)
+        [out_trials] = pre_processing_pip_trials(attout_dataset,bpfilt,bpwidth,toi)
+        [V4_trials] = pre_processing_pip_trials(V4_dataset,bpfilt,bpwidth,toi)
+        [in_trials] = do_SSD(in_trials,fs,th)
+        [out_trials] = do_SSD(out_trials,fs,th)
+        [V4_trials] = do_SSD(V4_trials,fs,th)
+        [grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,filttype,framelen,filtord)
+        
+        attin_inst = grand_struct.in_medfiltHilbert;
+        attout_inst = grand_struct.out_medfiltHilbert;
+        insummary = grand_struct.insummary;
+        outsummary = grand_struct.outsummary;
+        V4_inst = grand_struct.V4_medfiltHilbert;
+        V4summary = grand_struct.V4summary;
+        timebar = -1.3:0.001:5;
+        
+        %plotting all together, but only MS 2 & 3 
+        sel = 1:length(outsummary.mean);
+        x = timebar(sel);
+        figure('units','normalized','outerposition',[0 0 1 1],'visible','off')
+        plot(x,insummary.mean(sel),'r');
+        hold on 
+        plot(x,outsummary.mean(sel),'b');
+        plot(x,V4summary.mean(sel));
+        title(sprintf("Summary: sgolay_ord%d_len%d",ord(i_ord),len(i_len)))
+        legend('AttIn','AttOut','V4','AutoUpdate','off')
+        label = {'MS2','MS3','MS4'};
+        ylim([60 75])
+        %xl = xline([ 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
+        hold off
+        xlabel('Time [s]')
+        ylabel('Frequency [Hz]')
+        saveas(gcf,fullfile(paths,sprintf("sgolay_ord%d_len%d.jpg",ord(i_ord),len(i_len))))
+    end 
+end 
 %% Plotting all attin sessions with error bars 
 figure;
 sgtitle('Instantaneous frequencies per recording site AttIn')
@@ -131,22 +154,7 @@ hold off
 xlabel('Time [s]')
 ylabel('Frequency [Hz]')
 
-%% plotting all together, but only MS 2 & 3 
-sel = 1:length(outsummary.mean);
-x = timebar(sel);
-figure;
-plot(x,insummary.mean(sel),'r');
-hold on 
-plot(x,outsummary.mean(sel),'b');
-plot(x,V4summary.mean(sel));
-title("Summary of all conditions")
-legend('AttIn','AttOut','V4','AutoUpdate','off')
-label = {'MS2','MS3','MS4'};
-%xlim([0.8 3.2])
-%xl = xline([ 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
-hold off
-xlabel('Time [s]')
-ylabel('Frequency [Hz]')
+
 
 %% Quick derivative check
 a = diff(insummary.mean(sel))
