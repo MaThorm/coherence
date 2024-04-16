@@ -9,81 +9,51 @@ bpfilt = true;
 bpwidth = [30 100];
 
 % SSD parameters
-toi = [2.3 4.3];
-fs = 1000;
-th = 0.01;
+toi = [3.3 4.3]; % Time region of interest [2.3 4.3] is MC 2&3
+fs = 1000; % Sampling frequency of the signal
+th = 0.01; % residual variance threshhold   
 
 % Hilbert parameters
 filttype = "sgolay"; %either medfilt or sgolay
-framelen = 21;
+framelen = 31;
 filtord = 1;
-ord = [1 3 5];
-len = [11 21 31]
-matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files';
-paths = '/home/mthormann@brain.uni-bremen.de/V1V4coherence/03_results_max/inst_freq_loop/sgolay_filts/'
-for i_ord = 1:length(ord)
-    filtord = ord(i_ord)
-    for i_len = 1:length(len)
-        framelen = len(i_len)
-        [in_trials] = pre_processing_pip_trials(attin_dataset,bpfilt,bpwidth,toi)
-        [out_trials] = pre_processing_pip_trials(attout_dataset,bpfilt,bpwidth,toi)
-        [V4_trials] = pre_processing_pip_trials(V4_dataset,bpfilt,bpwidth,toi)
-        [in_trials] = do_SSD(in_trials,fs,th)
-        [out_trials] = do_SSD(out_trials,fs,th)
-        [V4_trials] = do_SSD(V4_trials,fs,th)
-        [grand_struct,angles,inst_freq] = pre_processing_pip_hilb(in_trials,out_trials,V4_trials,filttype,framelen,filtord)
-        
-        attin_inst = grand_struct.in_medfiltHilbert;
-        attout_inst = grand_struct.out_medfiltHilbert;
-        insummary = grand_struct.insummary;
-        outsummary = grand_struct.outsummary;
-        V4_inst = grand_struct.V4_medfiltHilbert;
-        V4summary = grand_struct.V4summary;
-        timebar = -1.3:0.001:5;
-        
-        %plotting all together, but only MS 2 & 3 
-        sel = 1:length(outsummary.mean);
-        x = timebar(sel);
-        figure('units','normalized','outerposition',[0 0 1 1],'visible','off')
-        plot(x,insummary.mean(sel),'r');
-        hold on 
-        plot(x,outsummary.mean(sel),'b');
-        plot(x,V4summary.mean(sel));
-        title(sprintf("Summary: sgolay_ord%d_len%d",ord(i_ord),len(i_len)))
-        legend('AttIn','AttOut','V4','AutoUpdate','off')
-        label = {'MS2','MS3','MS4'};
-        ylim([60 75])
-        %xl = xline([ 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
-        hold off
-        xlabel('Time [s]')
-        ylabel('Frequency [Hz]')
-        saveas(gcf,fullfile(paths,sprintf("sgolay_ord%d_len%d.jpg",ord(i_ord),len(i_len))))
-    end 
-end 
-%% Plotting all attin sessions with error bars 
-figure;
-sgtitle('Instantaneous frequencies per recording site AttIn')
-sel = 1:5000;
-x = timebar(sel);
-for ii = 1:length(attout_inst)
-    subplot(4,4,ii)
-    y = attin_inst(ii).sess_mean(sel);
-    sd = attin_inst(ii).sess_sd(sel);
-    patch([x fliplr(x)], [y-sd  fliplr(y+sd)], 'r', 'FaceAlpha',0.2, 'EdgeColor','none');
-    hold on
-    plot(x,y,'r')
-    hold off
-end 
 
-%% Plotting all attout sessions with error bars 
+matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files';
+
+%
+[in_trials] = pre_processing_pip_trials(attin_dataset,bpfilt,bpwidth,toi)
+[out_trials] = pre_processing_pip_trials(attout_dataset,bpfilt,bpwidth,toi)
+[V4_trials] = pre_processing_pip_trials(V4_dataset,bpfilt,bpwidth,toi)
+
+% Performing SSD
+[in_trials] = do_SSD(in_trials,fs,th)
+[out_trials] = do_SSD(out_trials,fs,th)
+[V4_trials] = do_SSD(V4_trials,fs,th)
+% Hilbert Angles, instantaneous frequency, filtered instantaneous
+% frequency, instantaneous change, summary struct
+[hilb_angles.in,inst_freq.in,filt_inst_freq.in,inst_change.in,summary.in]  = pre_processing_pip_hilb(in_trials,filttype,framelen,filtord);
+[hilb_angles.out,inst_freq.out,filt_inst_freq.out,inst_change.out,summary.out]  = pre_processing_pip_hilb(out_trials,filttype,framelen,filtord);
+[hilb_angles.V4,inst_freq.V4,filt_inst_freq.V4,inst_change.V4,summary.V4]  = pre_processing_pip_hilb(V4_trials,filttype,framelen,filtord);
+timebar = -1.3:0.001:5;
+
+%%
+attin_inst = grand_struct.in_medfiltHilbert;
+attout_inst = grand_struct.out_medfiltHilbert;
+insummary = grand_struct.insummary;
+outsummary = grand_struct.outsummary;
+V4_inst = grand_struct.V4_medfiltHilbert;
+V4summary = grand_struct.V4summary;
+
+%% Plotting all attin sessions with error bars 
+input = filt_inst_freq.V4; %Change last parameter: in,out,V4
 figure;
-sgtitle('Instantaneous frequencies per recording site AttOut')
-sel = 1:length(outsummary.mean);
+sgtitle('Instantaneous frequencies per recording site')
+sel = 1:length(input(1).sess_mean);
 x = timebar(sel);
-for ii = 1:length(attout_inst)
+for ii = 1:length(input)
     subplot(4,4,ii)
-    y = attout_inst(ii).sess_mean(sel);
-    sd = attout_inst(ii).sess_sd(sel);
+    y = input(ii).sess_mean(sel);
+    sd = input(ii).sess_sd(sel);
     patch([x fliplr(x)], [y-sd  fliplr(y+sd)], 'r', 'FaceAlpha',0.2, 'EdgeColor','none');
     hold on
     plot(x,y,'r')
@@ -92,10 +62,10 @@ end
 
 %% Plotting AttIn Summary
 figure; 
-sel = 1:length(insummary.mean);
+sel = 1:length(summary.in.mean);
 x = timebar(sel)
-y = insummary.mean(sel);
-sd = insummary.std(sel);
+y = summary.in.mean(sel);
+sd = summary.in.std(sel);
 patch([x fliplr(x)], [y-sd  fliplr(y+sd)], 'r', 'FaceAlpha',0.2, 'EdgeColor','none');
 title('AttIn Summary')
 xlabel('Time [s]')
@@ -106,11 +76,11 @@ xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
 plot(x,y,'r');
 hold off
 %% Plotting attout Summary
-sel = 1:length(outsummary.mean);
+sel = 1:length(summary.out.mean);
 x = timebar(sel)
 figure
-y = outsummary.mean(sel);
-sd = outsummary.std(sel);
+y = summary.out.mean(sel);
+sd = summary.out.std(sel);
 patch([x fliplr(x)], [y-sd  fliplr(y+sd)], 'r', 'FaceAlpha',0.2, 'EdgeColor','none');
 label = {'Static', 'MS1','MS2','MS3','MS4'}
 xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
@@ -123,10 +93,10 @@ hold off
 
 %% plotting V4 summary 
 figure
-sel = 1:length(V4summary.mean);
+sel = 1:length(summary.V4.mean);
 x = timebar(sel)
-y = V4summary.mean(sel);
-sd = V4summary.std(sel);
+y = summary.V4.mean(sel);
+sd = summary.V4.std(sel);
 patch([x fliplr(x)], [y-sd  fliplr(y+sd)], 'r', 'FaceAlpha',0.2, 'EdgeColor','none');
 label = {'Static', 'MS1','MS2','MS3','MS4'}
 xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
@@ -138,26 +108,40 @@ plot(x,y,'r');
 hold off
 
 %% plotting all together 
-sel = 1:length(outsummary.mean);
+sel = 1:length(summary.out.mean);
 x = timebar(sel);
 figure
-plot(x,insummary.mean(sel),'r');
+plot(x,summary.in.mean(sel),'r');
 hold on 
-plot(x,outsummary.mean(sel),'b');
-plot(x,V4summary.mean(sel));
+plot(x,summary.out.mean(sel),'b');
+plot(x,summary.V4.mean(sel));
 title("Summary of all conditions")
 legend('AttIn','AttOut','V4','AutoUpdate','off')
 label = {'Static', 'MS1','MS2','MS3','MS4'};
-xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
-ylim([60 80])
+%xl = xline([-0.5 0 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
+%ylim([60 80])
 hold off
 xlabel('Time [s]')
 ylabel('Frequency [Hz]')
 
-
+%% plotting all together, but only MS 2 & 3 
+sel = 1:length(summary.in.mean);
+x = timebar(sel);
+figure;
+plot(x,summary.in.mean,'r');
+hold on 
+plot(x,summary.out.mean,'b');
+plot(x,summary.V4.mean);
+title("Summary of all conditions")
+legend('AttIn','AttOut','V4','AutoUpdate','off')
+label = {'MS2','MS3','MS4'};
+%xl = xline([ 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
+hold off
+xlabel('Time [s]')
+ylabel('Frequency [Hz]')
 
 %% Quick derivative check
-a = diff(insummary.mean(sel))
+a = diff(summary.in.mean(sel))
 plot(a)
 %% Plotting derivative of derivative over all recording sites
 sel = 1:5000;
@@ -249,18 +233,4 @@ yyaxis right
 plot(timebar(sel),V4summary.mean(sel));
 ylabel('Frequency [Hz]')
  
-%% Testing script of ssd 
-% EXAMPLE:
-% Creation of some simple timeserie
-y  = sin(2*pi*5*(0:999)/1000);
-y2 = 0.1*sin(2*pi*15*(0:999)/1000);
-y3 = y+y2;
-y3(500:999) = y3(500:999)+sin(2*pi*75*(500:999)/1000);
-
-x1 = sin(2*pi*5*(0:999)/1000);
-x2 = [zeros(1,500) sin(2*pi*75*(501:1000)/1000)];
-x3 = 0.1*sin(2*pi*15*(0:999)/1000);
-
-v  = y3;
-% Sampling frequency 1000 and threshold of 0.005
-SSDcomponents = SSD(v,1000,0.01);
+%%
