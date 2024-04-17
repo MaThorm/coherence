@@ -1,4 +1,4 @@
-function [hilbertData,diffHilbertData,medfiltHilbert,instchange] = do_hilbert(trials,filttype,framelen,filtord)
+function [hilbertData_wr,hilbertData,diffHilbertData,medfiltHilbert,instchange] = do_hilbert(trials,filttype,framelen,filtord)
 %DO_HILBERT Summary of this function goes here
 % Does the Hilbert transform on a fieldtrip file. Using the resulting angle
 % the instantaneous frequency is calcualted by taking the derivative. The
@@ -14,16 +14,18 @@ function [hilbertData,diffHilbertData,medfiltHilbert,instchange] = do_hilbert(tr
 cfg = [];
 cfg.channel = 'all'
 cfg.hilbert = 'angle';
-hilbertData = ft_preprocessing(cfg,trials);
+hilbertData_wr = ft_preprocessing(cfg,trials);
 %hilbertData.trial =cellfun(@unwrap,hilbertData.trial,'UniformOutput',false); old cellfun
+
+% Unwrapping
+hilbertData = hilbertData_wr;
 hilbertData.trial = cellfun(@(x) unwrap(x,[],2),hilbertData.trial,'UniformOutput',false);
-
-
 
 % Ableiting 
 cfg = [];
-cfg.channel = trials.label{1}
-cfg.absdiff = 'yes';
+cfg.channel = 'all'
+%cfg.absdiff = 'yes';
+cfg.derivative = 'yes';
 diffHilbertData = ft_preprocessing(cfg,hilbertData);
 diffHilbertData.trial = cellfun(@(x) x*1000/(pi*2),diffHilbertData.trial,'UniformOutput',false);
 
@@ -31,14 +33,17 @@ diffHilbertData.trial = cellfun(@(x) x*1000/(pi*2),diffHilbertData.trial,'Unifor
 %Filtering somehow
 if filttype == 'medfilt'
     cfg = [];
-    cfg.channel = trials.label{1}
+    cfg.channel = 'all'
     cfg.medianfilter = 'yes';
     cfg.medianfiltord = framelen;
     medfiltHilbert = ft_preprocessing(cfg,diffHilbertData);
 elseif filttype == 'sgolay'
     medfiltHilbert = diffHilbertData;
     for ii = 1:length(diffHilbertData.trial)
-        medfiltHilbert.trial{1,ii} = sgolayfilt(diffHilbertData.trial{1,ii},filtord,framelen);
+        medfiltHilbert.trial{1,ii}(1,:) = sgolayfilt(diffHilbertData.trial{1,ii}(1,:),filtord,framelen);
+        if size(medfiltHilbert.trial{1,ii},1) == 2
+            medfiltHilbert.trial{1,ii}(2,:) = sgolayfilt(diffHilbertData.trial{1,ii}(2,:),filtord,framelen);
+        end 
     end 
 end  
 
