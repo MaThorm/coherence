@@ -1,9 +1,9 @@
-function [aMat] = cell2matnan(cell1)
+function [aMat] = cell2matnan(cell1,row)
 %cell2matnan Transforms a cell with 2-by-X matrices as contents into a matrix filled
 %with nans, using only the first row of each matrix.
 
     % Extract the first row from each 2-by-X matrix in the cell array
-    firstRows = cellfun(@(c) c(1,:), cell1, 'UniformOutput', false);
+    firstRows = cellfun(@(c) c(row,:), cell1, 'UniformOutput', false);
     
     % Find the maximum number of columns in any of the first rows
     maxNumCol = max(cellfun(@(c) size(c,2), firstRows));
