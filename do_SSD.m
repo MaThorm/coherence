@@ -11,14 +11,14 @@ parfor i_sess = 1:length(trials)
             cur_trial = trials(i_sess).trial{1, ii}(i_c,:);
             cur_SSD = SSD(cur_trial,fs,th);
             testing_struct(i_sess).SSD(ii).SSD{i_c}(:,:) = cur_SSD; %Storing different channels in different cells since number of components might differ
-            resi_var = [];
+            nmse = [];
             for comp = 1:size(cur_SSD,1)
-                resi = cur_trial - cur_SSD(comp,:);
-                testing_struct(i_sess).resi(ii).resi{i_c}(comp,:)  = resi;
-                resi_var(comp) = var(resi) / var(cur_trial); %Die formel hier für die Residual variance ist nicht unbedingt der korrekte weg, im Lowet Paper die NMSE
+                mse = mean((cur_trial - cur_SSD(comp,:)).^2);
+                testing_struct(i_sess).resi(ii).resi{i_c}(comp,:)  = mse;
+                nmse(comp) = mse / var(cur_trial); 
             end 
-            testing_struct(i_sess).resi_var(ii).resi_var{i_c}(:) = resi_var;
-            [temp,locmax_var] = min(resi_var);
+            testing_struct(i_sess).resi_var(ii).resi_var{i_c}(:) = nmse;
+            [temp,locmax_var] = min(nmse);
             new_trials(i_sess).trial{1, ii}(i_c,:) = cur_SSD(locmax_var,:);
             testing_struct(i_sess).max_SSD(ii).max_SSD{i_c}(:) = cur_SSD(locmax_var,:);
         end 
