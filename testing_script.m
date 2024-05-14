@@ -1,172 +1,232 @@
 clc
 clear all
-load('attout_dataset.mat')
-load('attin_dataset.mat')
-load("V4_dataset.mat")
-
-% Trial preprocessing parameters
-bpfilt = true;
-bpwidth = [30 100];
-
-% SSD parameters
+matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files';
 toi = [2.3 4.3]; % Time region of interest [2.3 4.3] is MC 2&3
 fs = 1000; % Sampling frequency of the signal
 th = 0.01; % residual variance threshhold   
+lower = 52;
+upper = 90;
+in_ssd_trials = load(fullfile(matpath,'SSD',sprintf('in_ssd_trials_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',th,lower,upper,10,toi(1),toi(2))));
+out_ssd_trials = load(fullfile(matpath,'SSD',sprintf('out_ssd_trials_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',th,lower,upper,10,toi(1),toi(2))));
+V4_SSD_trials = load(fullfile(matpath,'SSD',sprintf('V4_ssd_trials_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',th,lower,upper,10,toi(1),toi(2))));
+load(fullfile(matpath,'SSD',sprintf('inc_in_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',th,lower,upper,10,toi(1),toi(2))))
+load(fullfile(matpath,'SSD',sprintf('inc_out_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',th,lower,upper,10,toi(1),toi(2))))
+load(fullfile(matpath,'SSD',sprintf('inc_V4_trials_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',th,lower,upper,10,toi(1),toi(2))))
+%%
 
-% Hilbert parameters
-filttype = "sgolay"; %either medfilt or sgolay
-framelen = 31;
-filtord = 1;
+sess = 8
 
-matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files';
+m = matfile(fullfile(matpath,'SSD_testing',sprintf('testing_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',th,lower,upper,10,toi(1),toi(2))),'Writable',true);
+temp = m.in;
+testing_in = temp(sess);
+temp = m.out;
+testing_out = temp(sess);
+temp = m.V4
+testing_V4 = temp(sess);
+clear temp
 
-% Trialselection 
-[in1_trials] = pre_processing_pip_trials(attin_dataset,bpfilt,bpwidth,toi)
-[out1_trials] = pre_processing_pip_trials(attout_dataset,bpfilt,bpwidth,toi)
-[V41_trials] = pre_processing_pip_trials(V4_dataset,bpfilt,bpwidth,toi)
+%%
 
-%Performing SSD
-[in1ssd_trials] = do_SSD(in1_trials,fs,th)
-[out1ssd_trials] = do_SSD(out1_trials,fs,th)
-[V41ssd_trials] = do_SSD(V41_trials,fs,th)
-
-bpwidth = [50 100];
-% Trialselection 
-[in2_trials] = pre_processing_pip_trials(attin_dataset,bpfilt,bpwidth,toi)
-[out2_trials] = pre_processing_pip_trials(attout_dataset,bpfilt,bpwidth,toi)
-[V42_trials] = pre_processing_pip_trials(V4_dataset,bpfilt,bpwidth,toi)
-
-%Performing SSD
-[in2ssd_trials] = do_SSD(in2_trials,fs,th)
-[out2ssd_trials] = do_SSD(out2_trials,fs,th)
-[V42ssd_trials] = do_SSD(V42_trials,fs,th)
-
-parfor ii = 1:16
-    in_1fft(ii) = do_fft(in1_trials(ii));
-    inssd_1fft(ii) = do_fft(in1ssd_trials(ii));
-    in_2fft(ii) = do_fft(in2_trials(ii));
-    inssd_2fft(ii) = do_fft(in2ssd_trials(ii));
+n_comp = {};
+for ii = 1:1:length(testing_out)
+    n_comp{ii} = [cellfun(@(x) length(find(x >= 0.49999)),testing_out(ii).q(:,1)); cellfun(@(x) length(find(x >= 0.49999)),testing_in(ii).q(:,1));cellfun(@(x) length(find(x >= 0.49999)),testing_V4(ii).q(:,1))]
 end 
-% Hilbert Angles, instantaneous frequency, filtered instantaneous
-% frequency, instantaneous change, summary struct
-[hilb_angles.wrapped.in,hilb_angles.in,inst_freq.in,filt_inst_freq1.in,inst_change.in,summary.in]  = pre_processing_pip_hilb(in1ssd_trials,filttype,framelen,filtord);
-[hilb_angles.wrapped.out,hilb_angles.out,inst_freq.out,filt_inst_freq1.out,inst_change.out,summary.out]  = pre_processing_pip_hilb(out1ssd_trials,filttype,framelen,filtord);
-[hilb_angles.wrapped.V4,hilb_angles.V4,inst_freq.V4,filt_inst_freq1.V4,inst_change.V4,summary.V4]  = pre_processing_pip_hilb(V41ssd_trials,filttype,framelen,filtord);
+histogram(cell2mat(n_comp))
+title(sprintf("Number of components with a fraction > 0.5, session %d",sess))
+%% Further calculations
+in_cur = testing_in;
+out_cur = testing_out;
+max_in_SSD = nan(length(in_cur.p),length(freq));
+max_out_SSD = nan(length(out_cur.p),length(freq));
 
-[hilb_angles.wrapped.in,hilb_angles.in,inst_freq.in,filt_inst_freq2.in,inst_change.in,summary.in]  = pre_processing_pip_hilb(in2ssd_trials,filttype,framelen,filtord);
-[hilb_angles.wrapped.out,hilb_angles.out,inst_freq.out,filt_inst_freq2.out,inst_change.out,summary.out]  = pre_processing_pip_hilb(out2ssd_trials,filttype,framelen,filtord);
-[hilb_angles.wrapped.V4,hilb_angles.V4,inst_freq.V4,filt_inst_freq2.V4,inst_change.V4,summary.V4]  = pre_processing_pip_hilb(V42ssd_trials,filttype,framelen,filtord);
-timebar = -1.3:0.001:5;
+freq = in_cur.f{1,1};
+for ii = 1:length(in_cur.SSD)
+    max_one_in(ii) = find(in_cur.bounded{ii,1} == max(in_cur.bounded{ii,1})); % location of max gamme component 
+    max_in_SSD(ii,:) = in_cur.p{ii,1}(:,max_one_in(ii)); %In components with the max gamma power per trial    
+    peak_in(ii) = find(max_in_SSD(ii,:) == max(max_in_SSD(ii,:))); %Location of peaks per SSD component 
+    q_max_in(ii) = in_cur.q{ii,1}(:,max_one_in(ii)); % Fraction of biggest gamma component 
+end 
 
-% Calculating trial arrays
-inst1_in = (struct2matnan(filt_inst_freq1.in,1));
-inst1_out = (struct2matnan(filt_inst_freq1.out,1));
-inst1_V4 = (struct2matnan(filt_inst_freq1.V4,1));
-inst1_inV4 = struct2matnan(filt_inst_freq1.in,2);
-inst1_outV4 = (struct2matnan(filt_inst_freq1.out,2));
-inst1_inV4dif = inst1_in - inst1_inV4;
-inst1_outV4dif = inst1_out - inst1_outV4;
-inst1_inV4dif_mean = squeeze(mean(inst1_inV4dif,2,'omitnan'));
-inst1_outV4dif_mean = squeeze(mean(inst1_outV4dif,2,'omitnan'));
+for ii = 1:length(out_cur.SSD)
+    max_one_out(ii) = find(out_cur.bounded{ii,1} == max(out_cur.bounded{ii,1}));
+    max_out_SSD(ii,:) = out_cur.p{ii,1}(:,max_one_out(ii));
+    peak_out(ii) = find(max_out_SSD(ii,:) == max(max_out_SSD(ii,:)));  
+    q_max_out(ii) = out_cur.q{ii,1}(:,max_one_out(ii)); 
+end 
 
-inst1_in_mean = squeeze(mean(inst1_in,2,'omitnan'));
-inst1_out_mean = squeeze(mean(inst1_out,2,'omitnan'));
-inst1_V4_mean = squeeze(mean(inst1_V4,2,'omitnan'));
-inst1_in_meanmean = mean(inst1_in_mean,1,'omitnan');
-inst1_out_meanmean = mean(inst1_out_mean,1,'omitnan');
-inst1_V4_meanmean = mean(inst1_V4_mean,1,'omitnan');
 
-inst2_in = (struct2matnan(filt_inst_freq2.in,1));
-inst2_out = (struct2matnan(filt_inst_freq2.out,1));
-inst2_V4 = (struct2matnan(filt_inst_freq2.V4,1));
-inst2_inV4 = struct2matnan(filt_inst_freq2.in,2);
-inst2_outV4 = (struct2matnan(filt_inst_freq2.out,2));
-inst2_inV4dif = inst2_in - inst2_inV4;
-inst2_outV4dif = inst2_out - inst2_outV4;
-inst2_inV4dif_mean = squeeze(mean(inst2_inV4dif,2,'omitnan'));
-inst2_outV4dif_mean = squeeze(mean(inst2_outV4dif,2,'omitnan'));
+%% Plottig all sessions fooof vs SSD components
 
-inst2_in_mean = squeeze(mean(inst2_in,2,'omitnan'));
-inst2_out_mean = squeeze(mean(inst2_out,2,'omitnan'));
-inst2_V4_mean = squeeze(mean(inst2_V4,2,'omitnan'));
-inst2_in_meanmean = mean(inst2_in_mean,1,'omitnan');
-inst2_out_meanmean = mean(inst2_out_mean,1,'omitnan');
-inst2_V4_meanmean = mean(inst2_V4_mean,1,'omitnan');
-%% Plotting FFT results
-figure;
-for ii = 1:16
-    subplot(2,1,1)
-    plot(in_1fft(ii).freq,in_1fft(ii).powspctrm,'r');
-    hold on 
-    plot(in_2fft(ii).freq,in_2fft(ii).powspctrm,'b');
+subplot(1,2,1)
+plot(log(foof_summary.in_all.osc_alt(1).freq), log(foof_summary.in_all.osc_alt(sess).powspctrm));
+hold on 
+plot(log(foof_summary.in_all.osc_alt(1).freq), log(foof_summary.out_all.osc_alt(sess).powspctrm));
+plot(log(foof_summary.in_all.osc_alt(1).freq), log(foof_summary.V4_all.osc_alt(sess).powspctrm));
+x = str2double(xticklabels);
+xticklabels(exp(x))
+xlabel('log-freq'); ylabel('log-power'); grid on;
+legend({'in','out','V4'},'location','southwest');
+title(sprintf('Fooof sess %d',num));
+hold off
+subplot(1,2,2)
+histogram(n_comp)
+
+%% Plotting only components above >0.5. Green one has highest fraction 
+cur_test = testing_out;
+freq = cur_test.f{1,1}
+for ii = 1:length(testing_in.SSD)
+    cur_pos = find(cur_test.q{ii,1} > 0.4999)
+    for i_comp = 1:length(cur_pos)
+        plot(freq,cur_test.p{ii,1}(:,cur_pos(i_comp)))
+        xline([52])
+        xline([110])        
+        hold on
+        title(sprintf('Trial %d, component %d',ii,i_comp))
+    end 
+    max_one = find(cur_test.q{ii,1} == max(cur_test.q{ii,1}));
+    plot(freq,cur_test.p{ii,1}(:,max_one),'g')
     hold off 
-    legend({'Wide','Small'})
-    title('FFT')
-    subplot(2,1,2)
-    plot(inssd_1fft(ii).freq,inssd_1fft(ii).powspctrm,'r');    
-    hold on 
-    plot(inssd_2fft(ii).freq,inssd_2fft(ii).powspctrm,'b');
-    hold off
-    legend({'Wide','Small'})
-    title('FFT SSD')
-    w = waitforbuttonpress;
-    clf;
+    w = waitforbuttonpress
+    clf
 end 
 
- %% plotting all together: per session 
-figure;
-for ii = 1:16
-    subplot(2,1,1)
-    x = timebar(toi(1)*1000:toi(2)*1000);
-    plot(x,inst1_in_mean(ii,:),'r');
-    grid on 
-    hold on 
-    plot(x,inst1_out_mean(ii,:),'b');
-    plot(x,inst1_V4_mean(ii,:));
-    title([sprintf("Session %d: bp %d - %d, filter",ii, bpwidth(1),bpwidth(2)) filttype sprintf("length: %d, order: %d",framelen,filtord)])
-    legend('AttIn','AttOut','V4','AutoUpdate','off')
-    label = {'MS2','MS3','MS4'};
-    xl = xline([ 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
-    xlim([toi(1)-1.3 toi(2)-1.3])
-    %ylim([62 74])
-    hold off
-    xlabel('Time [s]')
-    ylabel('Frequency [Hz]')
-    subplot(2,1,2)
-    x = timebar(toi(1)*1000:toi(2)*1000);
-    plot(x,inst2_in_mean(ii,:),'r');
-    grid on 
-    hold on 
-    plot(x,inst2_out_mean(ii,:),'b');
-    plot(x,inst2_V4_mean(ii,:));
-    title([sprintf("Session %d: bp %d - %d, filter",ii, bpwidth(1),bpwidth(2)) filttype sprintf("length: %d, order: %d",framelen,filtord)])
-    legend('AttIn','AttOut','V4','AutoUpdate','off')
-    label = {'MS2','MS3','MS4'};
-    xl = xline([ 1 2 3],'--',label,'color',[0.7 0.7 0.7]);
-    xlim([toi(1)-1.3 toi(2)-1.3])
-    %ylim([62 74])
-    hold off
-    xlabel('Time [s]')
-    ylabel('Frequency [Hz]')
+%% Plotting all, green one has highest fraction
+cur_test = testing_in;
+freq = cur_test.f{1,1}
+for ii = 1:length(testing_in.SSD)
+    for i_comp = 1:size(cur_test.p{ii,1},2)
+        plot(freq,cur_test.p{ii,1}(:,i_comp))
+        xline([52])
+        xline([110])
+        hold on
+    end 
+    max_one = find(cur_test.q{ii,1} == max(cur_test.q{ii,1}));
+    plot(freq,cur_test.p{ii,1}(:,max_one),'g')
+    hold off 
+    xlim([1 150])
+    w = waitforbuttonpress
+    clf
+end 
+
+
+%% Plotting all, green one is biggest
+cur_test = testing_in;
+freq = cur_test.f{1,1}
+saving = true;
+for ii = 1:length(cur_test.SSD)
+    for i_comp = 1:size(cur_test.p{ii,1},2)
+        plot(freq,cur_test.p{ii,1}(:,i_comp))
+        xlim([1 150])
+
+        hold on
+    end 
+    sorted = sort(cur_test.bounded{ii,1});
+    max_one = find(cur_test.bounded{ii,1} == sorted(end));
+    second_one = find(cur_test.bounded{ii,1} == sorted(end-1));
+    %max_one = find(cur_test.bounded{ii,1} == max(cur_test.bounded{ii,1}));
+    plot(freq,cur_test.p{ii,1}(:,max_one),'g','LineWidth',2)
+    plot(freq,cur_test.p{ii,1}(:,second_one),'r','LineWidth',2)
+    xline([52],'--')
+    xline([90],'--')
+    if inc_in(sess).inc{ii,1} == true
+        truth = 'accepted';
+    else 
+        truth = 'rejected';
+    end 
+    title(sprintf('Session: %d, trial %d, %s ',sess,ii,truth))
+    ylim([0 2*max(cur_test.p{ii,1}(:,max_one))])
+    hold off 
+    if saving == true
+        foldername = sprintf("/data/projects/V1V4coherence/03_results_max/SSD/SSD_powerplots/session%d/%dHzto%dHz",sess,lower,upper)
+        if ~exist(foldername,'dir')
+            mkdir(foldername)
+        end 
+        saveas(gcf,fullfile(foldername, sprintf("trial%d.jpg",ii)))
+    else 
+        w = waitforbuttonpress;
+    end 
+    clf
+    %
+end
+%% Plotting some example trials 
+cur_test = testing_in;
+trial5 = [67 101 105 118 106 141 159];
+trial8 = [43 47 92 136 152 156 162 175 179 185 191];
+cur_trial = trial5;
+freq = cur_test.f{1,1}
+for ii = 1:length(cur_trial)
+    subplot(3,1,1)
+    sgtitle(sprintf('Session %d trial %d',sess,cur_trial(ii)))
+    sorted = sort(cur_test.bounded{cur_trial(ii),1});
+    max_one = find(cur_test.bounded{cur_trial(ii),1} == sorted(end));
+    plot(freq,cur_test.p{cur_trial(ii),1}(:,max_one),'g','LineWidth',2);
+    xlim([1 150])
+    xline([52],'--')
+    xline([90],'--')
+    subplot(3,1,2)
+    plot(cur_test.SSD{cur_trial(ii),1}(max_one,:))
+    title('SSD Component')
+    subplot(3,1,3)
+    plot(in_trials(sess).trial{1,cur_trial(ii)}(1,:))
+    title('Original Data')
     w = waitforbuttonpress;
     clf 
-end   
-
-
-
-
-
-%% Using the fieldtrip averaging
-cfg = [];
-for ii = 1:16
-    in_avg(ii) = ft_timelockanalysis(cfg,filt_inst_freq.out(ii))
 end 
-%
-for ii = 1:16
-    in_avg(ii).label{1,1} = 'test';
-end 
-cfg = [];
-cfg.channel = 'test';
-in_avg_avg = ft_timelockgrandaverage(cfg,in_avg(1),in_avg(2),in_avg(3),in_avg(4),in_avg(5),in_avg(6),in_avg(7),in_avg(8) ...
-    ,in_avg(9),in_avg(10),in_avg(11),in_avg(12),in_avg(13),in_avg(14),in_avg(15),in_avg(16));
 
+
+%% Plotting biggest in vs out component per trial
+in_cur = testing_in;
+out_cur = testing_out;
+freq = in_cur.f{1,1}
+figure
+for ii = 1:length(in_cur.SSD)
+    subplot(2,1,1)
+    plot(freq,in_cur.p{ii,1}(:,max_one_in(ii)),'r')
+    xlim([1 150])
+    hold on 
+    plot(freq,out_cur.p{ii,1}(:,max_one_out(ii)),'b')
+    title(sprintf('Session %d',ii))
+    legend('in','out','autoupdate','off')
+    xline([freq(peak_in(ii))],'r--','LineWidth',1.5)
+    xline([freq(peak_out(ii))],'b--','LineWidth',1.5)
+    xline([52],'--')
+    xline([90],'--')
+    hold off 
+    subplot(2,1,2)
+    plot(filt_inst_freq.in(8).trial{:,ii}(1,:),'r')
+    hold on 
+    plot(filt_inst_freq.out(8).trial{:,ii}(1,:),'b')
+    hold off
+    w = waitforbuttonpress;
+    clf
+end 
+
+%% Pltting biggest in vs out componnent combined 
+in_cur = testing_in(8);
+out_cur = testing_out(8);
+freq = in_cur.f{1,1}
+
+for ii = 1:length(in_cur.SSD)
+    max_one = find(in_cur.bounded{ii,1} == max(in_cur.bounded{ii,1}));
+    max_in_SSD(ii,:) = in_cur.p{ii,1}(:,max_one); %In components with the max gamma power per trial
+    max_one = find(out_cur.bounded{ii,1} == max(out_cur.bounded{ii,1}));
+    max_out_SSD(ii,:) = out_cur.p{ii,1}(:,max_one);
+end 
+
+plot(freq,mean(max_in_SSD,1),'r');
+hold on 
+plot(freq,mean(max_out_SSD,1),'b');
+legend('in','out','autoupdate','off')
+xlim([1 150])
+xline([52],'--')
+xline([90],'--')
+xline(freq(250),'b')
+
+hold off 
+%% Testing the testing 
+test_trial = in_trials(8)
+test_inc = cell2mat(inc_in(8).inc(:,1))
+test_trial.trial = test_trial.trial(test_inc)
+test_trial.time = test_trial.time(test_inc)
+test_trial.trialinfo = reshape(test_trial.trialinfo(repmat(test_inc,size(test_trial.trialinfo,2),1)),[sum(test_inc) 3])
+test_trial.sampleinfo = reshape(test_trial.sampleinfo(repmat(test_inc,size(test_trial.sampleinfo,2),1)),[sum(test_inc) 2])

@@ -20,7 +20,7 @@ parfor i_sess = 1:length(trials)
             test(i_sess).SSD{i_t,i_c} = cur_SSD;
             [p,f] = pspectrum(cur_SSD',fs); % calculates the powerspectrum of each SSD component
             test(i_sess).p{i_t,i_c} = p;
-            test(i_sess).f{i_t,i_c} = f;
+            test(i_sess).f = f;
             l_b = min(find(f >= lower)); % Finds the frequency value of lower bound
             u_b = max(find(f <= upper)); % Same for upper
             full = trapz(p);
@@ -30,16 +30,16 @@ parfor i_sess = 1:length(trials)
             q = bounded./full;
             test(i_sess).q{i_t,i_c} = q;
             %[a,m_ex] = max(q)
-            [a,m_ex] = max(bounded)
+            [a,m_ex] = max(bounded);    
             new_trials(i_sess).trial{1, i_t}(i_c,:) = cur_SSD(m_ex,:);
-            [a,peak] = max(cur_SSD(m_ex));
-            peak_freq = f(peak)
+            [a,peak] = max(p(:,m_ex));
+            peak_freq = f(peak);
             % Testing three things: whether proportion is bigger than 0.7
             % And whether peak is within frequency bounds 
             if q(m_ex) < 0.7 || peak_freq < lower || peak_freq > upper 
-                inc(i_sess).inc{i_t,i_sess} = false;
+                inc(i_sess).inc{i_t,i_c} = false;
             else 
-                inc(i_sess).inc{i_t,i_sess} = true;
+                inc(i_sess).inc{i_t,i_c} = true;
             end
         end 
     end 

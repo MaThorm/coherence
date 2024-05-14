@@ -48,6 +48,7 @@ trials = ft_selectdata(selectCfg, trials);
 if exist('toilim') 
     cfg = [];
     cfg.toilim = toilim;
+    cfg.minlength = 0.5; % minimum length of trials in seconds
     trials = ft_redefinetrial(cfg, trials);
 end 
 
@@ -69,7 +70,7 @@ if bpfilt == true
     cfg = [];
     cfg.bpfilter = 'yes';
     cfg.bpfreq = bpwidth;
-    cfg.bpfilttype = 'fir'; % Could different fooof results be due to this?
+    cfg.bpfilttype = 'fir'; 
     trials = ft_preprocessing(cfg,trials);
 end 
 %
