@@ -10,25 +10,23 @@ toi = [2.3 4.3]; % Time region of interest [2.3 4.3] is MC 2&3 full trial with -
 % SSD parameters
 fs = 1000; % Sampling frequency of the signal
 th = 0.01; % residual variance threshhold   
-lower = 52;
-upper = 90;
+lower = 80;
+upper = 110;
 
 matpath = '/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files';
 
 
-%% Loading structs 
+% Loading structs 
 LogicalStr = {'false', 'true'};
 load(fullfile(matpath,'trials',sprintf('in_trials_bpfilt%s_toi%.1f-%.1f.mat',LogicalStr{bpfilt+1},toi(1),toi(2))))
 load(fullfile(matpath,'trials',sprintf('out_trials_bpfilt%s_toi%.1f-%.1f.mat',LogicalStr{bpfilt+1},toi(1),toi(2))))
 load(fullfile(matpath,'trials',sprintf('V4_trials_bpfilt%s_toi%.1f-%.1f.mat',LogicalStr{bpfilt+1},toi(1),toi(2))))
-in_SSD_trials = load(fullfile(matpath,'SSD',sprintf('in_ssd_trials_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',th,lower,upper,10,toi(1),toi(2))));
-in_SSD_trials = in_SSD_trials.in_trials;
-out_SSD_trials = load(fullfile(matpath,'SSD',sprintf('out_ssd_trials_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',th,lower,upper,10,toi(1),toi(2))));
-out_SSD_trials = out_SSD_trials.out_trials;
-V4_SSD_trials = load(fullfile(matpath,'SSD',sprintf('V4_ssd_trials_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',th,lower,upper,10,toi(1),toi(2))));
-V4_SSD_trials = V4_SSD_trials.V4_trials;
+m = matfile(fullfile(matpath,'SSD',sprintf('ssd_trials_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',th,lower,upper,10,toi(1),toi(2))),'Writable',true);
+in_SSD_trials = m.in;
+out_SSD_trials = m.out;
+V4_SSD_trials = m.V4;
 
-%%
+%
 % calculating wavelet
 clear in_TFRwave out_TFRwave V4_TFRwave
 cur_in = in_SSD_trials; % Needs to be swapped out in case SSD should be calculated
@@ -40,7 +38,7 @@ cfg.method = 'wavelet'
 cfg.output = 'pow';
 cfg.foi = exp(linspace(log(5),log(160),35));
 cfg.toi = -1.3:0.001:4;
-cfg.keeptrials = 'no';
+cfg.keeptrials = 'yes';
 for ii = 1:length(cur_in)
     cfg.channel = cur_in(ii).label{1,1};
     in_TFRwave(ii) = ft_freqanalysis(cfg,cur_in(ii));
@@ -67,10 +65,18 @@ end
 for ii = 1:length(V4_TFRwave)
     V4_TFRwave_bl(ii) = ft_freqbaseline(cfg,V4_TFRwave(ii));
 end 
+mt = [];
+filename = sprintf('trial_SSDwavelet%d-%d.mat',lower,upper);
+savepath = "/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files/wavelet/"
+save(fullfile(savepath,filename),'mt','-v7.3')
+m = matfile(fullfile(savepath,filename),'Writable',true)
+m.in = in_TFRwave;
+m.out = out_TFRwave;
+m.V4 = V4_TFRwave;
 
 %% Saving structs non SSD 
 mt = [];
-filename = 'wavelet_red.mat'
+filename = 'trial_wavelet.mat'
 savepath = "/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files/wavelet/";
 save(fullfile(savepath,filename),'mt','-v7.3')
 m = matfile(fullfile(savepath,filename),'Writable',true)
@@ -79,14 +85,6 @@ m.out = out_TFRwave_bl;
 m.V4 = V4_TFRwave_bl; 
 
 %% Saving the structs SSD
-mt = [];
-filename = sprintf('SSDwavelet%d-%d_red.mat',lower,upper);
-savepath = "/data/projects/V1V4coherence/02_analysis_max/git_repos/mat_files/wavelet/"
-save(fullfile(savepath,filename),'mt','-v7.3')
-m = matfile(fullfile(savepath,filename),'Writable',true)
-m.in = in_TFRwave;
-m.out = out_TFRwave;
-m.V4 = V4_TFRwave;
 
 
 
