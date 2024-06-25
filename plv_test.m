@@ -10,70 +10,8 @@ filename = sprintf("inst_freq_toi%.1f-%.1f_lower%i_upper%i_filtord%i.mat",params
 m = matfile(fullfile(params.matpath,'Inst_freq',filename),'Writable',true);
 angles = m.angle;
 t_length = (params.toi(2) - params.toi(1)) * 1000 + 1
-%
-% Calculating PC the Iris way
-comb_data = angles.in;
-counter = 1;
-for i_sess = 1:length(comb_data)
-    var = comb_data(i_sess);
-    for i_chan = 1:length(var.label)-1
-        contrib = zeros(1,t_length);
-        dCos = zeros(1,t_length);
-        dSin = zeros(1,t_length);
-        for i_trial = 1:length(var.trial)
-            temp_array = NaN(1,t_length);
-            temp_array(:,1:length(var.trial{i_trial})) = 1;
-            phase_diff = var.trial{i_trial}(1,:) - var.trial{i_trial}(i_chan+1,:);
-            contrib = contrib + ~isnan(temp_array);
-            dCos(:,1:length(var.trial{i_trial})) = dCos(:,1:length(var.trial{i_trial})) + cos(phase_diff);
-            dSin(:,1:length(var.trial{i_trial})) = dSin(:,1:length(var.trial{i_trial})) + sin(phase_diff);
-        end 
-        dCos = dCos./contrib;
-        dSin = dSin./contrib;
-        VL_in(counter,:) = sqrt((dCos).^2+(dSin).^2);
-        VLEXP = sqrt(pi)./(2.*sqrt(contrib));
-        VL_in(counter,:) = VL_in(counter,:) - VLEXP;
-        meanAngle = acos((dCos)./VL_in(counter,:));
-        label{counter,1} = var.label{1,1};
-        label{counter,2} = var.label{1,i_chan+1}
-        counter = counter + 1;
-    end 
-end 
-t_meanin = mean(VL_in,1)
-sing_mean_in = mean(VL_in,2)
-grand_mean_in = mean(sing_mean_in)
-
-comb_data = angles.out;
-counter = 1;
-for i_sess = 1:length(comb_data)
-    var = comb_data(i_sess);
-    for i_chan = 1:length(var.label)-1
-        contrib = zeros(1,t_length);
-        dCos = zeros(1,t_length);
-        dSin = zeros(1,t_length);
-        for i_trial = 1:length(var.trial)
-            temp_array = NaN(1,t_length);
-            temp_array(:,1:length(var.trial{i_trial})) = 1;
-            phase_diff = var.trial{i_trial}(1,:) - var.trial{i_trial}(i_chan+1,:);
-            contrib = contrib + ~isnan(temp_array);
-            dCos(:,1:length(var.trial{i_trial})) = dCos(:,1:length(var.trial{i_trial})) + cos(phase_diff);
-            dSin(:,1:length(var.trial{i_trial})) = dSin(:,1:length(var.trial{i_trial})) + sin(phase_diff);
-        end 
-        dCos = dCos./contrib;
-        dSin = dSin./contrib;
-        VL_out(counter,:) = sqrt((dCos).^2+(dSin).^2);
-        VLEXP = sqrt(pi)./(2.*sqrt(contrib));
-        VL_out(counter,:) = VL_out(counter,:) - VLEXP;
-        meanAngle = acos((dCos)./VL_out(counter,:));
-        counter = counter + 1;
-    end 
-end 
-t_meanout = mean(VL_out,1)
-sing_mean_out = mean(VL_out,2)
-grand_mean_out = mean(sing_mean_out)
 
 
-%%
 angles.in = elongate(angles.in);
 angles.out = elongate(angles.out);
 
