@@ -1,4 +1,4 @@
-function [trials] = do_trialselection(path,filename,CoI,StimNo,bpfilt,bpwidth,toilim,BlCor,IncOut,offset)
+function [trials] = do_trialselection(path,filename,CoI,StimNo,bpfilt,bpwidth,BlCor,IncOut,offset)
 %DO_TRIALSELECTION 
 %   path = path of the file
 %   filename = name of the file
@@ -54,13 +54,13 @@ if bpfilt == true
     trials = ft_preprocessing(cfg,trials);
 end 
 
-% selecting certain time window
-if exist('toilim') 
-    cfg = [];
-    cfg.toilim = toilim;
-    cfg.minlength = 0.5; % minimum length of trials in seconds
-    trials = ft_redefinetrial(cfg, trials);
-end 
+% % selecting certain time window
+% if exist('toilim') 
+%     cfg = [];
+%     cfg.toilim = toilim;
+%     cfg.minlength = 0.5; % minimum length of trials in seconds
+%     trials = ft_redefinetrial(cfg, trials);
+% end 
 
 % shift 0 by offset
 cfg = [];

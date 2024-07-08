@@ -1,4 +1,4 @@
-function [new_trials,inc,test] = do_SSD(trials,fs,th,lower,upper)
+function [new_trials,inc,test] = do_SSD(trials,fs,th,lower,upper,toilim)
 %DO_SSD Function that takes a trialselected fieldtrip file and, using that,
 %switches out each trial with the biggest component of the SSD function.
 % trials: fieldtrip result of do_trialselection
@@ -11,15 +11,16 @@ function [new_trials,inc,test] = do_SSD(trials,fs,th,lower,upper)
 % new_trials: the new trial block 
 % inc: whether the trial, according to the set criteria will be included or
 % not
-new_trials = trials;
+
+
+
 parfor i_sess = 1:length(trials)
     for i_t = 1:length(trials(i_sess).trial)
         for i_c = 1:size(trials(i_sess).trial{1, i_t},1)
             cur_trial = trials(i_sess).trial{1, i_t}(i_c,:);
             cur_SSD = SSD(cur_trial,fs,th,10); %does the SSD algorithm on a single trial MAX 10 components right now
             test(i_sess).SSD{i_t,i_c} = cur_SSD;
-%             [p,f] = pspectrum(cur_SSD',fs); % calculates the powerspectrum of each SSD component
-            
+%             [p,f] = pspectrum(cur_SSD',fs); % calculates the powerspectrum of each SSD component           
             [p, ntaper, f] = ft_specest_mtmfft(cur_SSD,0.001:0.001:length(cur_trial)/1000,'taper','hanning');
             % P seems to be the c x f in the case where there is only one
             % component, adding a condition which changes that 

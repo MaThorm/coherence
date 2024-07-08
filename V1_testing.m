@@ -38,56 +38,42 @@ grand_inst.out.SD_MC23 = std(means.out,'omitnan');
 % grand_inst.in.SD_MC3 = std(means.in3,'omitnan');
 % grand_inst.out.SD_MC3 = std(means.out3,'omitnan');
 
-% Testing means
-plot(grand_inst.in.avg)
-%%
-for ii = 1:16
-    plot(inst_mean.in(ii).avg)
-    w = waitforbuttonpress;
-    clf 
-end 
-
-
-%%
-sess = 1;
-for ii = 1:100
-    plot(inst_freq.in(sess).trial{1,ii}(1,:))
-    w = waitforbuttonpress;
-    clf 
-end 
 %% Boxplot of means 
 f= figure;
 subplot(6,1,1:5)
 boxplot([means.in', means.out'],'Labels' ,{'Attended','Unattended'})
 title(sprintf('Mean inst. freq from %.1f to %.1f',params.toi(1),params.toi(2)))
+xlabel('Frequency [Hz]')
 [p,h,stats] = signrank(means.in,means.out)
 annotation('textbox', [0.13 0.08 0.78 0.1],'String',sprintf('H0 rejected: %s, p = %.4f',mat2str(h),p))
-foldername = fullfile(params.figpath,'inst_freq_cut_16',sprintf('%d-%d_sdmult%.1f_outmult%.1f/toi%.1f-%.1f/boxplots',params.lower,params.upper,params.sd_mult,params.outlier_mult,params.toi(1),params.toi(2)))
+foldername = fullfile(params.figpath,'inst_freq',params.bptype,sprintf("bpwidth_%i-%i/toi_%.1f-%.1f/mean_plots",params.lower,params.upper,params.toi(1),params.toi(2)))
 if ~exist(foldername,'dir')
     mkdir(foldername)
 end 
-% saveas(f,fullfile(foldername,sprintf('boxplot_mean_inst_freq.fig')))
-% saveas(f,fullfile(foldername,sprintf('boxplot_mean_inst_freq.jpg')))
+saveas(f,fullfile(foldername,sprintf('boxplot_mean_inst_freq.fig')))
+saveas(f,fullfile(foldername,sprintf('boxplot_mean_inst_freq.jpg')))
 
 %% Scatterplot 
 f = figure;
+f.Units = 'normalized';
+f.Position = [0.25 0.25 0.5 0.5]
 scatter(means.out,means.in)
-% xmax = max(means.out)+0.2
-% xmin = min(means.out)-0.2
-% ymax = max(means.in)+0.2
-% ymin = min(means.in)-0.2
 c_max = max([means.out means.in]) + 0.2;
 c_min = min([means.out means.in]) - 0.2
 
 ylim([c_min c_max])
 xlim([c_min c_max])
-ylabel('V1a mean frequencies')
-xlabel('V1n mean frequencies')
+ylabel('V1a mean frequency [Hz]')
+xlabel('V1n mean frequency [Hz]')
 hold on 
 plot(1:100,1:100)
-% ylabel('In')
-% xlabel('Out')
-% title(sprintf("toi %.1f - %.1f",params.toi(1),params.toi(2)))
+title(sprintf("V1a vs V1n mean frequencies per session: %s, toi %.1f - %.1f s, freq bounds: %i - %i Hz",params.bptype,params.toi(1),params.toi(2),params.lower,params.upper))
+foldername = fullfile(params.figpath,'inst_freq',params.bptype,sprintf("bpwidth_%i-%i/toi_%.1f-%.1f/mean_plots",params.lower,params.upper,params.toi(1),params.toi(2)))
+if ~exist(foldername,'dir')
+    mkdir(foldername)
+end
+saveas(f,fullfile(foldername,sprintf('scatter_mean_inst_freq.fig')))
+saveas(f,fullfile(foldername,sprintf('scatter_mean_inst_freq.jpg')))
 %%
 f= figure;
 f.Units = 'normalized'
@@ -117,13 +103,13 @@ subplot(1,3,1)
 violin([means.in', means.out'],'Labels' ,{'Attended','Unattended'})
 title('Mean inst. freq over MC 2 & 3')
 
-subplot(1,3,2)
-violin([means.in2',means.out2'],'Labels' ,{'Attended','Unattended'})
-title('Mean inst. freq over MC 2')
-
-subplot(1,3,3)
-violin([means.in3',means.out3'],'Labels' ,{'Attended','Unattended'})
-title('Mean inst. freq over MC 3')
+% subplot(1,3,2)
+% violin([means.in2',means.out2'],'Labels' ,{'Attended','Unattended'})
+% title('Mean inst. freq over MC 2')
+% 
+% subplot(1,3,3)
+% violin([means.in3',means.out3'],'Labels' ,{'Attended','Unattended'})
+% title('Mean inst. freq over MC 3')
 
 %% Statistics of means 
 [p,h,stats] = signrank(means.in,means.out)
@@ -198,13 +184,13 @@ for ii = 1:length(inst_mean.in)
     hold off 
     [R,P] = corr(inst_mean.in(ii).avg',inst_mean.out(ii).avg')
     annotation('textbox', [0.13 0.05 0.2 0.1],'String',sprintf('R = %.2f, p = %.2f',R,P))
-    foldername = fullfile(params.figpath,'inst_freq_16',sprintf('%d-%d/toi%.1f-%.1f/correlations',params.lower,params.upper,params.toi(1),params.toi(2)))
+    foldername = fullfile(params.figpath,'corr',params.bptype,sprintf("bpwidth_%i-%i/toi_%.1f-%.1f/V1a_V1ncorr",params.lower,params.upper,params.toi(1),params.toi(2)))
     if ~exist(foldername,'dir')
         mkdir(foldername)
     end 
-%     saveas(f,fullfile(foldername,sprintf('correlations_recsite%i.fig',ii)))
-%     saveas(f,fullfile(foldername,sprintf('correlations_recsite%i.png',ii)))
-    w = waitforbuttonpress;
+    saveas(f,fullfile(foldername,sprintf('correlations_recsite%i.fig',ii)))
+    saveas(f,fullfile(foldername,sprintf('correlations_recsite%i.png',ii)))
+%     w = waitforbuttonpress;
     clf
 end 
 

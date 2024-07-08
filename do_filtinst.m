@@ -1,4 +1,4 @@
-function [phase_angles,inst_freq,filt_data] = do_filtinst(phase_angles_wr,filttype,framelen,filtord)
+function [phase_angles,inst_freq,filt_data] = do_filtinst(phase_angles_wr,filttype,framelen,filtord,toilim)
 %DO_HILBERT Summary of this function goes here
 % Does the Hilbert Transform on 
 % Inputs should be: 
@@ -48,8 +48,8 @@ elseif filttype == "medfilt"
     cfg.channel = 'all'
     cfg.medianfilter = 'yes';
     cfg.medianfiltord = framelen;
-    cfg.padding = 2.5;
-    cfg.padtype = 'mirror';
+%     cfg.padding = 2.5;
+%     cfg.padtype = 'mirror';
     filt_data = ft_preprocessing(cfg,inst_freq);
 %   New way of median filtering
 %     filt_data = inst_freq;
@@ -58,10 +58,17 @@ elseif filttype == "medfilt"
 %             filt_data.trial{1,ii}(i_t,:) = medfilt1(filt_data.trial{1,ii}(i_t,:),framelen,[],2,"includenan",'truncate');
 %         end
 %     end 
-    % five-point numerical derivation !!testing 9 right now!!
+% five-point numerical derivation !!testing 5 right now!!
 for ii = 1: length(filt_data.trial)
     instchange.diff{ii} = cent_diff_n(filt_data.trial{ii},1,5);
 end 
+
+cfg = [];
+cfg.toilim = toilim;
+phase_angles = ft_redefinetrial(cfg, phase_angles);
+inst_freq = ft_redefinetrial(cfg, inst_freq);
+filt_data = ft_redefinetrial(cfg, filt_data);
+
 end  
 end
 

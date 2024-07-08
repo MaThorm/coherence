@@ -9,48 +9,56 @@ load('attin_dataset.mat')
 load('V4_dataset.mat')
 
 % Trialselection 
-[in_trials] = pre_processing_pip_trials(attin_dataset,params.bpfilt,params.bpwidth,params.toi)
-[out_trials] = pre_processing_pip_trials(attout_dataset,params.bpfilt,params.bpwidth,params.toi)
-[V4_trials] = pre_processing_pip_trials(V4_dataset,params.bpfilt,params.bpwidth,params.toi)
+[in_trials] = pre_processing_pip_trials(attin_dataset,params.bpfilt,params.bpwidth)
+[out_trials] = pre_processing_pip_trials(attout_dataset,params.bpfilt,params.bpwidth)
+[V4_trials] = pre_processing_pip_trials(V4_dataset,params.bpfilt,params.bpwidth)
 
 %Saving
 LogicalStr = {'false', 'true'};
-save(fullfile(params.matpath,'trials',sprintf('in_trials_bpfilt%s_toi%.1f-%.1f.mat',LogicalStr{params.bpfilt+1},params.toi(1),params.toi(2))),"in_trials")
-save(fullfile(params.matpath,'trials',sprintf('out_trials_bpfilt%s_toi%.1f-%.1f.mat',LogicalStr{params.bpfilt+1},params.toi(1),params.toi(2))),"out_trials")
-save(fullfile(params.matpath,'trials',sprintf('V4_trials_bpfilt%s_toi%.1f-%.1f.mat',LogicalStr{params.bpfilt+1},params.toi(1),params.toi(2))),"V4_trials") 
+m = matfile(fullfile(params.matpath,'trials',sprintf('trials_bpfilt%s.mat',LogicalStr{params.bpfilt+1})),'Writable',true);
+m.in = in_trials;
+m.out = out_trials;
+m.V4 = V4_trials;
 
 %% SSD calculation
-clear
-load("/data/projects/V1V4coherence/02_analysis_max/git_repos/params.mat")
-if params.bptype == "bpfilt"
-    error('You dont want to SSD if you already bp-filtered')
+if params.bptype == "SSD"
+    clear
+    load("/data/projects/V1V4coherence/02_analysis_max/git_repos/params.mat")
+    
+    % Loading
+    LogicalStr = {'false', 'true'};
+    m = matfile(fullfile(params.matpath,'trials',sprintf('trials_bpfilt%s.mat',LogicalStr{params.bpfilt+1})),'Writable',true);
+    in_trials = m.in;
+    out_trials = m.out;
+    V4_trials = m.V4;
+    
+    % Taking time of interesdt
+    in_trials = do_toi_cut(in_trials,params.toi);
+    out_trials = do_toi_cut(out_trials,params.toi);
+    V4_trials = do_toi_cut(V4_trials,params.toi);
+
+    % Performing SSD
+    [in_SSD_trials,inc_in,testing_in] = do_SSD(in_trials,params.fs,params.th,params.lower,params.upper,params.toi);
+    [out_SSD_trials,inc_out,testing_out] = do_SSD(out_trials,params.fs,params.th,params.lower,params.upper,params.toi);
+    [V4_SSD_trials,inc_V4,testing_V4] = do_SSD(V4_trials,params.fs,params.th,params.lower,params.upper,params.toi);
+    
+    % Saving
+    m = matfile(fullfile(params.matpath,'SSD',sprintf('ssd_trials_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',params.th,params.lower,params.upper,10,params.toi(1),params.toi(2))),'Writable',true);
+    m.in = in_SSD_trials;
+    m.out = out_SSD_trials;
+    m.V4 = V4_SSD_trials;
+    m = matfile(fullfile(params.matpath,'SSD_testing',sprintf('testing_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',params.th,params.lower,params.upper,10,params.toi(1),params.toi(2))),'Writable',true);
+    m.in = testing_in;
+    m.out = testing_out;
+    m.V4 = testing_V4;
 end 
-LogicalStr = {'false', 'true'};
-load(fullfile(params.matpath,'trials',sprintf('in_trials_bpfilt%s_toi%.1f-%.1f.mat',LogicalStr{params.bpfilt+1},params.toi(1),params.toi(2))));
-load(fullfile(params.matpath,'trials',sprintf('out_trials_bpfilt%s_toi%.1f-%.1f.mat',LogicalStr{params.bpfilt+1},params.toi(1),params.toi(2))));
-load(fullfile(params.matpath,'trials',sprintf('V4_trials_bpfilt%s_toi%.1f-%.1f.mat',LogicalStr{params.bpfilt+1},params.toi(1),params.toi(2))));
-
-
-% Performing SSD
-[in_SSD_trials,inc_in,testing_in] = do_SSD(in_trials,params.fs,params.th,params.lower,params.upper);
-[out_SSD_trials,inc_out,testing_out] = do_SSD(out_trials,params.fs,params.th,params.lower,params.upper);
-[V4_SSD_trials,inc_V4,testing_V4] = do_SSD(V4_trials,params.fs,params.th,params.lower,params.upper);
-
-% Saving
-m = matfile(fullfile(params.matpath,'SSD',sprintf('ssd_trials_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',params.th,params.lower,params.upper,10,params.toi(1),params.toi(2))),'Writable',true);
-m.in = in_SSD_trials;
-m.out = out_SSD_trials;
-m.V4 = V4_SSD_trials;
-m = matfile(fullfile(params.matpath,'SSD_testing',sprintf('testing_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',params.th,params.lower,params.upper,10,params.toi(1),params.toi(2))),'Writable',true);
-m.in = testing_in;
-m.out = testing_out;
-m.V4 = testing_V4;
 
 %% Hilbert Angles, instantaneous frequency, filtered instantaneous
 % frequency, instantaneous change
 clear
 load("/data/projects/V1V4coherence/02_analysis_max/git_repos/params.mat")
 
+% Loading either trial or SSD struct
 if params.bptype == "SSD"
     m = matfile(fullfile(params.matpath,'SSD',sprintf('ssd_trials_th%.2f_bounds%d-%d_ncomp%d_toi%.1f-%.1f.mat',params.th,params.lower,params.upper,10,params.toi(1),params.toi(2))),'Writable',true);
     in_trials = m.in;
@@ -58,9 +66,10 @@ if params.bptype == "SSD"
     V4_trials = m.V4;
 elseif params.bptype == "bpfilt"
     LogicalStr = {'false', 'true'};
-    load(fullfile(params.matpath,'trials',sprintf('in_trials_bpfilt%s_toi%.1f-%.1f.mat',LogicalStr{params.bpfilt+1},params.toi(1),params.toi(2))));
-    load(fullfile(params.matpath,'trials',sprintf('out_trials_bpfilt%s_toi%.1f-%.1f.mat',LogicalStr{params.bpfilt+1},params.toi(1),params.toi(2))));
-    load(fullfile(params.matpath,'trials',sprintf('V4_trials_bpfilt%s_toi%.1f-%.1f.mat',LogicalStr{params.bpfilt+1},params.toi(1),params.toi(2))));
+    m = matfile(fullfile(params.matpath,'trials',sprintf('trials_bpfilt%s.mat',LogicalStr{params.bpfilt+1})),'Writable',true);
+    in_trials = m.in;
+    out_trials = m.out;
+    V4_trials = m.V4;
 end 
 
 % Hilberting
@@ -69,9 +78,10 @@ end
 [hilb_angles.wrapped.V4]  = pre_processing_pip_hilb(V4_trials);
 
 % Filtering and derivating : VERY IMPORTANT: Depending on the filter, the filtered instantaneous changes is either inst_freq (in the case of sgolay) or filt_inst_freq (in the case of medfilt)    
-[hilb_angles.in,inst_freq.in,filt_data.in]  = pre_processing_pip_filtinst(hilb_angles.wrapped.in,params.filttype,params.framelen,params.filtord);
-[hilb_angles.out,inst_freq.out,filt_data.out]  = pre_processing_pip_filtinst(hilb_angles.wrapped.out,params.filttype,params.framelen,params.filtord);
-[hilb_angles.V4,inst_freq.V4,filt_data.V4]  = pre_processing_pip_filtinst(hilb_angles.wrapped.V4,params.filttype,params.framelen,params.filtord);
+[hilb_angles.in,inst_freq.in,filt_data.in]  = pre_processing_pip_filtinst(hilb_angles.wrapped.in,params.filttype,params.framelen,params.filtord,params.toi);
+[hilb_angles.out,inst_freq.out,filt_data.out]  = pre_processing_pip_filtinst(hilb_angles.wrapped.out,params.filttype,params.framelen,params.filtord,params.toi);
+[hilb_angles.V4,inst_freq.V4,filt_data.V4]  = pre_processing_pip_filtinst(hilb_angles.wrapped.V4,params.filttype,params.framelen,params.filtord,params.toi);
+
 
 if params.filttype == "sgolay"     
     filt_inst_freq.in = inst_freq.in;
@@ -141,10 +151,10 @@ end
 [angle_long_dif.in,inst_freq_dif.in,filt_data_dif.in]  = pre_processing_pip_filtinst(angle_long_dif_wr.in,filttype,framelen,filtord);
 [angle_long_dif.out,inst_freq_dif.out,filt_data_dif.out]  = pre_processing_pip_filtinst(angle_long_dif_wr.out,filttype,framelen,filtord);
 
-if filttype == 'sgolay'     
+if filttype == "sgolay"    
     filt_inst_freq_dif.in = inst_freq_dif.in;
     filt_inst_freq_dif.out = inst_freq_dif.out;
-elseif filttype == 'medfilt'
+elseif filttype == "medfilt"
     filt_inst_freq_dif.in = filt_data_dif.in;
     filt_inst_freq_dif.out = filt_data_dif.out;
 end 
