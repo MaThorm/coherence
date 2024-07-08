@@ -1,4 +1,4 @@
-function [phase_angles,inst_freq,filt_data] = pre_processing_pip_hilb(phase_angles_wr,filttype,framelen,filtord)
+function [phase_angles,inst_freq,filt_data] = pre_processing_pip_hilb(phase_angles_wr,filttype,framelen,filtord,toilim)
 %PRE_PROCESSING_PIP_HILB Feeds fieldtrip structs to do_filtinst function
 %which filters the data and takes the instantaneous frequency. 
 % Input should be
@@ -8,7 +8,7 @@ function [phase_angles,inst_freq,filt_data] = pre_processing_pip_hilb(phase_angl
 % filtord: order of the filter applied (only for sgolay)
 
 for ii = 1:length(phase_angles_wr)
-    [phase_angles(ii), inst_freq(ii), filt_data(ii)] = do_filtinst(phase_angles_wr(ii),filttype,framelen,filtord); 
+    [phase_angles(ii), inst_freq(ii), filt_data(ii)] = do_filtinst(phase_angles_wr(ii),filttype,framelen,filtord,toilim); 
 end 
 
 % % mean over trials 
