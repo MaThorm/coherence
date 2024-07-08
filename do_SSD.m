@@ -18,9 +18,19 @@ parfor i_sess = 1:length(trials)
             cur_trial = trials(i_sess).trial{1, i_t}(i_c,:);
             cur_SSD = SSD(cur_trial,fs,th,10); %does the SSD algorithm on a single trial MAX 10 components right now
             test(i_sess).SSD{i_t,i_c} = cur_SSD;
-            [p,f] = pspectrum(cur_SSD',fs); % calculates the powerspectrum of each SSD component
+%             [p,f] = pspectrum(cur_SSD',fs); % calculates the powerspectrum of each SSD component
+            
+            [p, ntaper, f] = ft_specest_mtmfft(cur_SSD,0.001:0.001:length(cur_trial)/1000,'taper','hanning');
+            % P seems to be the c x f in the case where there is only one
+            % component, adding a condition which changes that 
+            if size(cur_SSD,1) > 1            
+                p = abs(squeeze(p))';
+            else 
+                p = abs(squeeze(p));
+            end 
+            f = f';
             test(i_sess).p{i_t,i_c} = p;
-            test(i_sess).f = f;
+            test(i_sess).f{i_t,i_c} = f';
             l_b = min(find(f >= lower)); % Finds the frequency value of lower bound
             u_b = max(find(f <= upper)); % Same for upper
             full = trapz(p);
@@ -41,6 +51,7 @@ parfor i_sess = 1:length(trials)
             else 
                 inc(i_sess).inc{i_t,i_c} = true;
             end
+            fprintf(sprintf("Session %d, trial %d, component %d",i_sess,i_t,i_c))
         end 
     end 
 end  

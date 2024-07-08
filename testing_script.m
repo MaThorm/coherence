@@ -81,7 +81,8 @@ for ii = 1:length(testing_in.SSD)
         xline([52])
         xline([110])        
         hold on
-        title(sprintf('Trial %d, component %d',ii,i_comp))
+        title(sprintf('Trial %d,  % residual variance threshhold   
+lower = 5component %d',ii,i_comp))
     end 
     max_one = find(cur_test.q{ii,1} == max(cur_test.q{ii,1}));
     plot(freq,cur_test.p{ii,1}(:,max_one),'g')
@@ -174,59 +175,30 @@ for ii = 1:length(cur_trial)
 end 
 
 
-%% Plotting biggest in vs out component per trial
-in_cur = testing_in;
-out_cur = testing_out;
-freq = in_cur.f{1,1}
-figure
-for ii = 1:length(in_cur.SSD)
-    subplot(2,1,1)
-    plot(freq,in_cur.p{ii,1}(:,max_one_in(ii)),'r')
-    xlim([1 150])
-    hold on 
-    plot(freq,out_cur.p{ii,1}(:,max_one_out(ii)),'b')
-    title(sprintf('Session %d',ii))
-    legend('in','out','autoupdate','off')
-    xline([freq(peak_in(ii))],'r--','LineWidth',1.5)
-    xline([freq(peak_out(ii))],'b--','LineWidth',1.5)
-    xline([52],'--')
-    xline([90],'--')
-    hold off 
-    subplot(2,1,2)
-    plot(filt_inst_freq.in(8).trial{:,ii}(1,:),'r')
-    hold on 
-    plot(filt_inst_freq.out(8).trial{:,ii}(1,:),'b')
-    hold off
-    w = waitforbuttonpress;
-    clf
+%%
+sig = in_trials(1).trial{1, 1};
+time = in_trials(1).time{1}
+[spectrum, ntaper, freqoi] = ft_specest_mtmfft(sig,time,'taper','hanning');
+
+%%
+session = 1;
+trial = 1;
+comp_num = 1;
+freq = in(session).f
+for trial = 1:length(in(session).SSD)
+    for comp_num = 1:size(in(session).SSD{trial,1},1)
+        sig = in(session).SSD{trial, 1};
+        time = 0.001:0.001:length(sig)/1000;
+        [spectrum, ntaper, freqoi] = ft_specest_mtmfft(sig,time,'taper','dpss','tapsmofrq',);
+        subplot(2,1,1)
+        spectrum = mean(spectrum,1)
+        plot(freqoi,squeeze(abs(spectrum(:,comp_num,:))));
+        xlim([1 200]) 
+        [spectrum, ntaper, freqoi] = ft_specest_mtmfft(sig,time,'taper','hanning','tapsmofrq',1);
+        subplot(2,1,2)
+        plot(freqoi,squeeze(abs(spectrum(:,comp_num,:))));
+        xlim([1 200])         
+        w = waitforbuttonpress
+        clf 
+    end 
 end 
-
-%% Pltting biggest in vs out componnent combined 
-in_cur = testing_in(8);
-out_cur = testing_out(8);
-freq = in_cur.f{1,1}
-
-for ii = 1:length(in_cur.SSD)
-    max_one = find(in_cur.bounded{ii,1} == max(in_cur.bounded{ii,1}));
-    max_in_SSD(ii,:) = in_cur.p{ii,1}(:,max_one); %In components with the max gamma power per trial
-    max_one = find(out_cur.bounded{ii,1} == max(out_cur.bounded{ii,1}));
-    max_out_SSD(ii,:) = out_cur.p{ii,1}(:,max_one);
-end 
-
-plot(freq,mean(max_in_SSD,1),'r');
-hold on 
-plot(freq,mean(max_out_SSD,1),'b');
-legend('in','out','autoupdate','off')
-xlim([1 150])
-xline([52],'--')
-xline([90],'--')
-xline(freq(250),'b')
-
-hold off 
-%% Testing the testing 
-test_trial = in_trials(8)
-test_inc = cell2mat(inc_in(8).inc(:,1))
-test_trial.trial = test_trial.trial(test_inc)
-test_trial.time = test_trial.time(test_inc)
-test_trial.trialinfo = reshape(test_trial.trialinfo(repmat(test_inc,size(test_trial.trialinfo,2),1)),[sum(test_inc) 3])
-test_trial.sampleinfo = reshape(test_trial.sampleinfo(repmat(test_inc,size(test_trial.sampleinfo,2),1)),[sum(test_inc) 2])

@@ -44,6 +44,16 @@ selectCfg.trials = ismember(trials.trialinfo(:,3), IncOut) & ...
     ismember(trials.trialinfo(:,2), StimNo);
 trials = ft_selectdata(selectCfg, trials);
 
+% BP filtering
+if bpfilt == true
+    cfg = [];
+    cfg.bpfilter = 'yes';
+    cfg.bpfreq = bpwidth;
+%     cfg.padding = 2.5;
+    cfg.bpfilttype = 'fir'; 
+    trials = ft_preprocessing(cfg,trials);
+end 
+
 % selecting certain time window
 if exist('toilim') 
     cfg = [];
@@ -65,13 +75,6 @@ if BlCor == true
     trials = ft_preprocessing(preprocCfg, trials);
 end 
 
-% BP filtering
-if bpfilt == true
-    cfg = [];
-    cfg.bpfilter = 'yes';
-    cfg.bpfreq = bpwidth;
-    cfg.bpfilttype = 'fir'; 
-    trials = ft_preprocessing(cfg,trials);
-end 
+
 %
 end 

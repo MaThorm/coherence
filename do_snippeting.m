@@ -17,10 +17,9 @@ new_inst = inst;
 for i_s = 1:length(inst.in)
     wave_in = wavelet_SSD.in(i_s);
     wave_out = wavelet_SSD.out(i_s);
-    wave_V4 = wavelet_SSD.V4(i_s);
+
     inst_in = inst.in(i_s);
     inst_out = inst.out(i_s);
-    inst_V4 = inst.V4(i_s);
     
     clear pow_in pow_out pow_V4
     % Gettingn only the relevant 
@@ -34,10 +33,7 @@ for i_s = 1:length(inst.in)
 %         pow_out(i_t,:,:) = squeeze(wave_out.powspctrm(i_t,:,:,toi(1):toi(2)));
     end 
     
-    for i_t = 1:size(wave_V4.powspctrm,1)
-        pow_V4(i_t,:,:) = squeeze(wave_V4.powspctrm(i_t,:,yrange,toi(1):toi(2)));
-%         pow_V4(i_t,:,:) = squeeze(wave_V4.powspctrm(i_t,:,:,toi(1):toi(2)));
-    end 
+
     
     % Reshaping the gamma wavelet power spectra to 1D
     pow_1d_in = reshape(pow_in,1,[]); 
@@ -49,9 +45,7 @@ for i_s = 1:length(inst.in)
     pow_1d_comb = [pow_1d_in pow_1d_out];
     testing.V1(i_s).full_pow = pow_1d_comb;
 
-    pow_1d_V4 = reshape(pow_V4,1,[]);
-    pow_1d_V4 = pow_1d_V4(~isnan(pow_1d_in));
-    testing.V4(i_s).full_pow = pow_1d_V4;
+
 
     % Statistics old
     % p_m = mean(pow_1d_comb);
@@ -67,6 +61,7 @@ for i_s = 1:length(inst.in)
     pow_1d_comb = pow_1d_comb(pow_1d_comb <= p_med + outlier_mult*pow_iqr);
     p_m = mean(pow_1d_comb,'omitnan');
     p_sd = std(pow_1d_comb,'omitnan');
+
     % Cutoff is then the mean - X * the SD
     cut_off_comb = p_m - sd_mult*p_sd;
     testing.V1(i_s).pow = pow_1d_comb;
@@ -74,18 +69,7 @@ for i_s = 1:length(inst.in)
     testing.V1(i_s).p_sd = p_sd;
     testing.V1(i_s).cut_off = cut_off_comb;
     
-    % For V4
-    p_med_V4 = median(pow_1d_V4,'omitnan');
-    pow_iqr_V4 = iqr(pow_1d_V4);
-    testing.V4(i_s).out_cut = p_med_V4 + outlier_mult*pow_iqr_V4;
-    pow_1d_V4 = pow_1d_V4(pow_1d_V4 <= p_med_V4 + outlier_mult*pow_iqr_V4);
-    p_mV4 = mean(pow_1d_V4,'omitnan');
-    p_sdV4 = std(pow_1d_V4,'omitnan');
-    cut_off_V4 = p_mV4 - sd_mult*p_sdV4;
-    testing.V4(i_s).pow = pow_1d_V4;
-    testing.V4(i_s).p_mean = p_mV4;
-    testing.V4(i_s).p_sd = p_sdV4;
-    testing.V4(i_s).cut_off = cut_off_V4;
+
     
     % Creating logical arrays (not actually logical) for each gamma power
     % spectra. For each time point it is evaluated whether the peak power in
@@ -123,25 +107,55 @@ for i_s = 1:length(inst.in)
         new_inst.out(i_s).trial{:,i_t} = cur_trial;
     end 
     
-    for i_t = 1:size(pow_V4,1)
-        for i_time = 1:size(pow_V4,3)
-            if max(pow_V4(i_t,:,i_time)) <= cut_off_V4
-                cut_V4(i_s,i_t,i_time) = nan;
-            elseif isnan(pow_V4(i_t,:,i_time))
-                cut_V4(i_s,i_t,i_time) = nan;
-            else 
-                cut_V4(i_s,i_t,i_time) = 1;            
-            end 
-        end 
-        cur_trial = inst.V4(i_s).trial{:,i_t};
-        cur_cut = squeeze(cut_V4(i_s,i_t,1:length(cur_trial)));
-        cur_trial(isnan(cur_cut)) = nan;
-        new_inst.V4(i_s).trial{:,i_t} = cur_trial;
-    end
 
+    
+
+    % DOing everything above also for V4 in case it makes senseuuu
+    if isfield(wavelet_SSD,'V4') == 1
+        wave_V4 = wavelet_SSD.V4(i_s);
+        inst_V4 = inst.V4(i_s);
+        for i_t = 1:size(wave_V4.powspctrm,1)
+            pow_V4(i_t,:,:) = squeeze(wave_V4.powspctrm(i_t,:,yrange,toi(1):toi(2)));
+        end 
+        pow_1d_V4 = reshape(pow_V4,1,[]);
+        pow_1d_V4 = pow_1d_V4(~isnan(pow_1d_in));
+        testing.V4(i_s).full_pow = pow_1d_V4;
+    
+        % For V4
+        p_med_V4 = median(pow_1d_V4,'omitnan');
+        pow_iqr_V4 = iqr(pow_1d_V4);
+        testing.V4(i_s).out_cut = p_med_V4 + outlier_mult*pow_iqr_V4;
+        pow_1d_V4 = pow_1d_V4(pow_1d_V4 <= p_med_V4 + outlier_mult*pow_iqr_V4);
+        p_mV4 = mean(pow_1d_V4,'omitnan');
+        p_sdV4 = std(pow_1d_V4,'omitnan');
+        cut_off_V4 = p_mV4 - sd_mult*p_sdV4;
+    
+        testing.V4(i_s).pow = pow_1d_V4;
+        testing.V4(i_s).p_mean = p_mV4;
+        testing.V4(i_s).p_sd = p_sdV4;
+        testing.V4(i_s).cut_off = cut_off_V4;
+    
+        for i_t = 1:size(pow_V4,1)
+            for i_time = 1:size(pow_V4,3)
+                if max(pow_V4(i_t,:,i_time)) <= cut_off_V4
+                    cut_V4(i_s,i_t,i_time) = nan;
+                elseif isnan(pow_V4(i_t,:,i_time))
+                    cut_V4(i_s,i_t,i_time) = nan;
+                else 
+                    cut_V4(i_s,i_t,i_time) = 1;            
+                end 
+            end 
+            cur_trial = inst.V4(i_s).trial{:,i_t};
+            cur_cut = squeeze(cut_V4(i_s,i_t,1:length(cur_trial)));
+            cur_trial(isnan(cur_cut)) = nan;
+            new_inst.V4(i_s).trial{:,i_t} = cur_trial;
+        end
+    end 
 end 
 cut.in = cut_in;
 cut.out = cut_out;
-cut.V4 = cut_V4;
+if isfield(wavelet_SSD,'V4') == 1
+    cut.V4 = cut_V4;
+end 
 end
 

@@ -130,6 +130,7 @@ yline([0])
 hold off
 
 %% Plotting grand foof
+figpath = "/data/projects/V1V4coherence/03_results_max/fooof/"
 figure('Units','normalized','Position',[0 0 0.5 0.5])
 plot(log(foof_summary.in_all.original(1).freq),grand_foof);
 hold on
@@ -150,3 +151,5 @@ xlabel('Frequency')
 ylabel('Power')
 yline([0])
 hold off
+saveas(gcf,fullfile(figpath,'Combined_Fooof_FWHM.jpg'))
+saveas(gcf,fullfile(figpath,'Combined_Fooof_FWHM.fig'))
