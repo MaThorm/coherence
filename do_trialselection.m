@@ -1,4 +1,4 @@
-function [trials] = do_trialselection(path,filename,CoI,StimNo,bpfilt,bpwidth,BlCor,IncOut,offset)
+function [trials] = do_trialselection(path,filename,CoI,StimNo,bpfilt,bpwidth,order,BlCor,IncOut,offset)
 %DO_TRIALSELECTION 
 %   path = path of the file
 %   filename = name of the file
@@ -44,15 +44,32 @@ selectCfg.trials = ismember(trials.trialinfo(:,3), IncOut) & ...
     ismember(trials.trialinfo(:,2), StimNo);
 trials = ft_selectdata(selectCfg, trials);
 
-% BP filtering
+% % BP filtering
 if bpfilt == true
     cfg = [];
     cfg.bpfilter = 'yes';
     cfg.bpfreq = bpwidth;
-%     cfg.padding = 2.5;
+    cfg.padding = 4;
+%     cfg.padtype = 'mirror'
     cfg.bpfilttype = 'fir'; 
+    cfg.bpfiltord = order;
     trials = ft_preprocessing(cfg,trials);
 end 
+
+%new, manual bp-filtering
+% fs = 1000;
+% Fbp = bpwidth;
+% type = 'fir';
+% dir = 'twopass';
+% if bpfilt == true
+%     for i_t = 1:length(trials.trial)
+%         for i_c = 1:size(trials.trial{1,i_t},1)
+%             cur_trial = trials.trial{1,i_t}(i_c,:);
+%             filt_trial = ft_preproc_bandpassfilter(cur_trial,fs,Fbp,order,type,dir);
+%             trials.trial{1,i_t}(i_c,:) = filt_trial;
+%         end 
+%     end 
+% end 
 
 % % selecting certain time window
 % if exist('toilim') 

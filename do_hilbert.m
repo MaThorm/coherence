@@ -1,4 +1,4 @@
-function [phase_angles_wr] = do_hilbert(trials)
+function [phase_angles_wr,hilb_env] = do_hilbert(trials)
 %DO_HILBERT Summary of this function goes here
 % Does the Hilbert transform on a fieldtrip file. Calculates the phase
 % angles and the unwrapped phase angles 
@@ -11,6 +11,8 @@ cfg = [];
 cfg.channel = 'all'
 cfg.hilbert = 'angle';
 phase_angles_wr = ft_preprocessing(cfg,trials);
+cfg.hilbert = 'abs';
+hilb_env = ft_preprocessing(cfg,trials);
 
 
 

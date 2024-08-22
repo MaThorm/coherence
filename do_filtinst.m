@@ -48,7 +48,7 @@ elseif filttype == "medfilt"
     cfg.channel = 'all'
     cfg.medianfilter = 'yes';
     cfg.medianfiltord = framelen;
-%     cfg.padding = 2.5;
+    cfg.padding = 4;
 %     cfg.padtype = 'mirror';
     filt_data = ft_preprocessing(cfg,inst_freq);
 %   New way of median filtering
@@ -65,7 +65,7 @@ end
 
 cfg = [];
 cfg.toilim = toilim;
-phase_angles = ft_redefinetrial(cfg, phase_angles);
+phase_angles = ft_redefinetrial(cfg, phase_angles); %klappt aus irgendeinem grund hier nicht
 inst_freq = ft_redefinetrial(cfg, inst_freq);
 filt_data = ft_redefinetrial(cfg, filt_data);
 
