@@ -5,7 +5,7 @@ A MATLAB pipeline for preprocessing, analysing, and visualizing local field pote
 Understanding coherence and oscillatory coupling between visual cortical areas (e.g. V1 and V4) is critical for studying visual information flow.
 This repository provides a reproducible framework to compute time-frequency metrics, such as instantaneous frequency (based on the Hilbert transform) and phase-locking values (PLV), allowing flexible comparison across recording sites and experimental conditions.
 
-Features
+## Features
 
 - Preprocessing of raw LFP data (filtering, resampling, artifact handling)
 - Automated parameter setup using create_params.m
@@ -14,12 +14,19 @@ Features
 - Visualisation of spectral dynamics and significant effects
 - Modular code for easy adaptation to new datasets
 
-The general processing flow is illustrated below:
+## Requirements 
+- MATLAB R2022b or later
+- Signal Processing Toolbox
+- Statistics Toolbox
+- Fieldtrip toolbox
+- BrainBox toolbox
+
+## Pipeline overview
 <img width="2000" height="1939" alt="process_overview" src="https://github.com/user-attachments/assets/caf1657f-076c-43ad-9c81-e0bd65af3d7f" />
 
 
 
-## Some more example plots: 
+## Example Results: 
 
 ### Instantaneous frequency over time 
 <img width="1600" height="536" alt="grand_average_inst_freq" src="https://github.com/user-attachments/assets/fd670027-22e4-4071-afa9-0d1a2c47bcf9" />
@@ -37,5 +44,10 @@ The general processing flow is illustrated below:
 <img width="2000" height="1039" alt="filt_compare_sess5_trial2" src="https://github.com/user-attachments/assets/e2c68905-f0b9-47fc-b72e-c382591a9938" />
 
 
-Acknowledgments
-This project makes extensive use of the FieldTrip toolbox, an open-source MATLAB toolbox for MEG, EEG, and invasive electrophysiological data analysis developed at the Donders Institute.
+## Acknowledgments
+This project makes use of the FieldTrip toolbox, an open-source MATLAB toolbox for MEG, EEG, and invasive electrophysiological data analysis developed at the Donders Institute.
+
+## License and Contact
+License: MIT
+Author: Maximilian Thormann
+Contact: mthorm96@gmail.com
