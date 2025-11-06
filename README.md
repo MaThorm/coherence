@@ -2,13 +2,19 @@
 
 A MATLAB pipeline for preprocessing, analysing, and visualizing local field potential (LFP) data from visual cortical areas V1 and V4. This pipeline automates the full analysis workflow — from raw signal preprocessing to coherence and instantaneous frequency analyses — for studying inter-areal neural synchrony.
 
+Understanding coherence and oscillatory coupling between visual cortical areas (e.g. V1 and V4) is critical for studying visual information flow.
+This repository provides a reproducible framework to compute time-frequency metrics, such as instantaneous frequency (based on the Hilbert transform) and phase-locking values (PLV), allowing flexible comparison across recording sites and experimental conditions.
 
+Features
 
-Parameters for analyses are created using create_params.m. Processing is done using processing_pip_full.m. Analyses are stored in the analyses folder. 
+- Preprocessing of raw LFP data (filtering, resampling, artifact handling)
+- Automated parameter setup using create_params.m
+- Computation of instantaneous frequency, coherence, and PLV
+- Statistical comparison between cortical areas (e.g., V1 vs. V4)
+- Visualisation of spectral dynamics and significant effects
+- Modular code for easy adaptation to new datasets
 
-
-The general process following pre-processing is the following: 
-
+The general processing flow is illustrated below:
 <img width="2000" height="1939" alt="process_overview" src="https://github.com/user-attachments/assets/caf1657f-076c-43ad-9c81-e0bd65af3d7f" />
 
 
