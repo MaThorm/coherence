@@ -46,8 +46,3 @@ This repository provides a reproducible framework to compute time-frequency metr
 
 ## Acknowledgments
 This project makes use of the FieldTrip toolbox, an open-source MATLAB toolbox for MEG, EEG, and invasive electrophysiological data analysis developed at the Donders Institute.
-
-## License and Contact
-License: MIT
-Author: Maximilian Thormann
-Contact: mthorm96@gmail.com
