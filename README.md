@@ -1,6 +1,6 @@
 # Tools to analyse V1/V4 data
 
-A MATLAB pipeline (using the Fieldtrip toolbox) for preprocessing, analysing, and visualizing local field potential (LFP) data from visual cortical areas V1 and V4 built using the [FieldTrip toolbox](https://www.fieldtriptoolbox.org/). This pipeline automates the full analysis workflow — from raw signal preprocessing to coherence and instantaneous frequency analyses — for studying inter-areal neural synchrony.
+A MATLAB pipeline (using the Fieldtrip toolbox) for preprocessing, analysing, and visualizing local field potential (LFP) data from visual cortical areas V1 and V4 built using the [FieldTrip toolbox](https://www.fieldtriptoolbox.org/). This pipeline automates the full analysis workflow — from raw signal preprocessing to coherence and instantaneous frequency analyses for studying inter-areal neural synchrony.
 
 Understanding coherence and oscillatory coupling between visual cortical areas (e.g. V1 and V4) is critical for studying visual information flow.
 This repository provides a reproducible framework to compute time-frequency metrics, such as instantaneous frequency (based on the Hilbert transform) and phase-locking values (PLV), allowing flexible comparison across recording sites and experimental conditions.
