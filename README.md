@@ -24,3 +24,6 @@ The general process following pre-processing is the following:
 
 ### Comparison of wavelet and hilbert approach
 <img width="4000" height="856" alt="wave_inst_plot_in_t3" src="https://github.com/user-attachments/assets/b63fc197-0991-4400-9eae-bc1e80b4fe3b" />
+
+### Performance of smoothing filters
+<img width="2000" height="1039" alt="filt_compare_sess5_trial2" src="https://github.com/user-attachments/assets/e2c68905-f0b9-47fc-b72e-c382591a9938" />
