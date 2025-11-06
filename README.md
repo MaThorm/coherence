@@ -49,7 +49,5 @@ This project makes use of the FieldTrip toolbox, an open-source MATLAB toolbox f
 
 ## License and Contact
 License: MIT
-
 Author: Maximilian Thormann
-
 Contact: mthorm96@gmail.com
