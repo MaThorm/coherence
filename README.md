@@ -1,9 +1,11 @@
 # Tools to analyse V1/V4 data
 
-This datapipeline is used to preprocess, analyse and visualize LFP data from V1 and V4. 
+A MATLAB pipeline for preprocessing, analysing, and visualizing local field potential (LFP) data from visual cortical areas V1 and V4. This pipeline automates the full analysis workflow — from raw signal preprocessing to coherence and instantaneous frequency analyses — for studying inter-areal neural synchrony.
+
 
 
 Parameters for analyses are created using create_params.m. Processing is done using processing_pip_full.m. Analyses are stored in the analyses folder. 
+
 
 The general process following pre-processing is the following: 
 
