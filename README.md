@@ -16,7 +16,7 @@ The general process following pre-processing is the following:
 Instantaneous frequency over time 
 <img width="1600" height="536" alt="grand_average_inst_freq" src="https://github.com/user-attachments/assets/fd670027-22e4-4071-afa9-0d1a2c47bcf9" />
 
-Instantaneous frequency over time of attended V1 vs noattended V1, gray areas indicate significant differences 
+Instantaneous frequency over time, gray areas indicate significant differences between V1a and V1n
 <img width="1000" height="536" alt="V1dif_per_T_env_bpfilt" src="https://github.com/user-attachments/assets/a5df8957-4179-4d80-bff3-71e349743fd0" />
 
 Average IF per recording site for different SSD bounds
