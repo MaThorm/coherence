@@ -18,8 +18,8 @@ This repository provides a reproducible framework to compute time-frequency metr
 - MATLAB R2022b or later
 - Signal Processing Toolbox
 - Statistics Toolbox
-- Fieldtrip toolbox
-- BrainBox toolbox
+- Fieldtrip 
+- BrainBox 
 
 ## Pipeline overview
 <img width="2000" height="1939" alt="process_overview" src="https://github.com/user-attachments/assets/caf1657f-076c-43ad-9c81-e0bd65af3d7f" />
