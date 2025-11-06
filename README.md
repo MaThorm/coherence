@@ -16,3 +16,9 @@ Instantaneous frequency over time
 
 Instantaneous frequency over time of attended V1 vs noattended V1, gray areas indicate significant differences 
 <img width="1000" height="536" alt="V1dif_per_T_env_bpfilt" src="https://github.com/user-attachments/assets/a5df8957-4179-4d80-bff3-71e349743fd0" />
+
+Average IF per recording site for different SSD bounds
+<img width="840" height="642" alt="mean_freq_per_filtwidth_SSD" src="https://github.com/user-attachments/assets/684aedfe-6c12-497a-8e57-8f02a165e730" />
+
+Comparison of wavelet and hilbert approach
+<img width="4000" height="856" alt="wave_inst_plot_in_t3" src="https://github.com/user-attachments/assets/b63fc197-0991-4400-9eae-bc1e80b4fe3b" />
