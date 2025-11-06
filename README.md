@@ -9,7 +9,9 @@ The general process following pre-processing is the following:
 
 <img width="2000" height="1939" alt="process_overview" src="https://github.com/user-attachments/assets/caf1657f-076c-43ad-9c81-e0bd65af3d7f" />
 
-Some more example plots: 
+
+
+#Some more example plots: 
 
 Instantaneous frequency over time 
 <img width="1600" height="536" alt="grand_average_inst_freq" src="https://github.com/user-attachments/assets/fd670027-22e4-4071-afa9-0d1a2c47bcf9" />
