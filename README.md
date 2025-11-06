@@ -11,7 +11,7 @@ The general process following pre-processing is the following:
 
 
 
-#Some more example plots: 
+## Some more example plots: 
 
 Instantaneous frequency over time 
 <img width="1600" height="536" alt="grand_average_inst_freq" src="https://github.com/user-attachments/assets/fd670027-22e4-4071-afa9-0d1a2c47bcf9" />
