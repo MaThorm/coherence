@@ -12,7 +12,6 @@ This repository provides a reproducible framework to compute time-frequency metr
 - Computation of instantaneous frequency, coherence, and PLV
 - Statistical comparison between cortical areas (e.g., V1 vs. V4)
 - Visualisation of spectral dynamics and significant effects
-- Modular code for easy adaptation to new datasets
 
 ## Requirements 
 - MATLAB R2022b or later
