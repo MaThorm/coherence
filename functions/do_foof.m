@@ -1,13 +1,12 @@
 function [fractal, original,oscillatory,oscillatory_alt] = do_foof(trials)
-%DO_FOOF Summary of this function goes here
-%   Detailed explanation goes here
+%DO_FOOF Fits oscellation one over F using the Fieldtrip Toolbox
 cfg               = [];
-cfg.foilim        = [1 150]; 
-cfg.pad           = 6;
+cfg.foilim        = [1 150]; %timelimit
+cfg.pad           = 6; % Padding
 cfg.tapsmofrq     = 2;
-cfg.method        = 'mtmfft';
+cfg.method        = 'mtmfft'; %Method should be 'mtmfft'
 cfg.output        = 'fooof_aperiodic';
-cfg.channel       = trials.label{1}
+cfg.channel       = trials.label{1} 
 fractal = ft_freqanalysis(cfg, trials);
 cfg.output        = 'pow';
 original = ft_freqanalysis(cfg, trials);
